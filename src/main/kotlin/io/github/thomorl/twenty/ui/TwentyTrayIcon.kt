@@ -20,24 +20,26 @@
 package io.github.thomorl.twenty.ui
 
 import io.github.thomorl.twenty.Resources
-import java.awt.*
+import java.awt.Font
+import java.awt.Toolkit
+import java.awt.TrayIcon
 import java.awt.event.ActionListener
 import kotlin.system.exitProcess
 
 class TwentyTrayIcon(twentyActionListener: ActionListener) : TrayIcon(Toolkit.getDefaultToolkit().getImage(Resources.get("ui/icons/test-icon.png")), "20ty") {
 
     init {
-        this.popupMenu = PopupMenu("20ty").apply {
-            add(MenuItem("20ty").apply {
+        this.popupMenu = popupMenu("20ty") {
+            menuItem("20ty") {
                 this.font = (font ?: Font.decode(null))?.deriveFont(Font.BOLD) ?: Font(Font.SANS_SERIF, Font.BOLD, 14)
                 addActionListener(twentyActionListener)
-            })
-            addSeparator()
-            add(MenuItem("Exit").apply {
+            }
+            separator()
+            menuItem("Exit") {
                 addActionListener {
                     exitProcess(0)
                 }
-            })
+            }
         }
 
         this.isImageAutoSize = true
