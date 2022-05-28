@@ -28,8 +28,8 @@ import kotlin.math.cos
 
 class InterruptWindow : AnimatedJFrame("20ty") {
     private val contentBox = JPanel()
-    private val message = JBigLabel("Look at least 20 m into the distance.", 2.0f)
-    private val counter = JBigLabel("0", 6.0f)
+    private val message = scaledJLabel("Look at least 20 m into the distance.", 2.0f)
+    private val counter = scaledJLabel("0", 6.0f)
 
     // These values are used to control the color animation
     companion object {

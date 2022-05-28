@@ -21,6 +21,10 @@ package io.github.thomorl.twenty.ui
 
 import javax.swing.JLabel
 
-fun JBigLabel(text: String, scaleFactor: Float) = JLabel(text).apply {
-    font = font.deriveFont(font.size2D * scaleFactor)
+fun scaledJLabel(text: String, scaleFactor: Float) = JLabel(text).apply {
+    this.scale(scaleFactor)
+}
+
+fun JLabel.scale(factor: Float) {
+    font = font.deriveFont(font.size2D * factor)
 }

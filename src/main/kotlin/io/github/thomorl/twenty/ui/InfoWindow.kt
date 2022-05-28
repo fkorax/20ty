@@ -35,7 +35,7 @@ class InfoWindow : AnimatedJFrame("20ty") {
         // Time Zone set to UTC since elapsed time is displayed
         timeZone = TimeZone.getTimeZone("UTC")
     }
-    private val screenTimeDisplay = JBigLabel("<SCREEN TIME>", 2.0f)
+    private val screenTimeDisplay = scaledJLabel("<SCREEN TIME>", 2.0f)
 
     init {
         val padSize = screenTimeDisplay.font.size
