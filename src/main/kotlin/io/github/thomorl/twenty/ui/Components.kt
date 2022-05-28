@@ -17,36 +17,9 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty
+package io.github.thomorl.twenty.ui
 
 import javax.swing.JLabel
-
-inline fun <T> forEach(a: T, b: T, block: (T) -> Unit) {
-    block(a)
-    block(b)
-}
-
-inline fun <T> forEach(a: T, b: T, c: T, block: (T) -> Unit) {
-    block(a)
-    block(b)
-    block(c)
-}
-
-inline fun <T> forEach(a: T, b: T, c: T, d: T, block: (T) -> Unit) {
-    block(a)
-    block(b)
-    block(c)
-    block(d)
-}
-
-inline fun sleepSafely(millis: Long, onInterrupt: (e: InterruptedException) -> Unit) {
-    try {
-        Thread.sleep(millis)
-    }
-    catch (e: InterruptedException) {
-        onInterrupt(e)
-    }
-}
 
 fun JBigLabel(text: String, scaleFactor: Float) = JLabel(text).apply {
     font = font.deriveFont(font.size2D * scaleFactor)

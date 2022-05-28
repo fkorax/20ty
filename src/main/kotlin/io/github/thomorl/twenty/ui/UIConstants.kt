@@ -17,21 +17,9 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty
+package io.github.thomorl.twenty.ui
 
-import java.io.InputStream
-import java.net.URL
-
-object Resources {
-
-    // When the program is first started, save a timestamp so the total screen time can be calculated
-    @JvmField
-    val PROGRAM_START_TIME = System.currentTimeMillis()
-
-    val timeSinceStart: Long get() = System.currentTimeMillis() - PROGRAM_START_TIME
-
-    fun get(name: String): URL = this.javaClass.getResource(name)
-
-    fun getAsStream(name: String): InputStream = this.javaClass.getResourceAsStream(name)
+object UIConstants {
+    const val DEFAULT_ANIMATION_FPS = 20L
 
 }

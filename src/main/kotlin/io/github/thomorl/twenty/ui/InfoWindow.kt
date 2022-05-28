@@ -17,9 +17,11 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty
+package io.github.thomorl.twenty.ui
 
-import java.awt.Component
+import io.github.thomorl.twenty.Resources
+import io.github.thomorl.twenty.util.forEach
+import io.github.thomorl.twenty.util.sleepSafely
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.Box
@@ -55,7 +57,7 @@ class InfoWindow : AnimatedDialog("20ty") {
 
         // Set alignments
         forEach(screenTimeLabel, screenTimeDisplay, closeButton) {
-            it.alignmentX = Component.CENTER_ALIGNMENT
+            it.alignmentX = CENTER_ALIGNMENT
         }
 
         // Add components

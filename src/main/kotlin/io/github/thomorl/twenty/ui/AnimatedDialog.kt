@@ -17,7 +17,7 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty
+package io.github.thomorl.twenty.ui
 
 import java.awt.Frame
 import java.awt.event.ComponentAdapter
@@ -25,7 +25,7 @@ import java.awt.event.ComponentEvent
 import javax.swing.JDialog
 
 abstract class AnimatedDialog(title: String) : JDialog(null as Frame?, title, false), Runnable {
-    var animationFPS: Long = Resources.DEFAULT_ANIMATION_FPS
+    var animationFPS: Long = UIConstants.DEFAULT_ANIMATION_FPS
 
     init {
         // An event listener which reacts if this dialog is shown

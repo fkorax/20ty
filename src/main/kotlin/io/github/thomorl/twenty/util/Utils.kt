@@ -17,21 +17,31 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty
+package io.github.thomorl.twenty.util
 
-import java.io.InputStream
-import java.net.URL
+inline fun <T> forEach(a: T, b: T, block: (T) -> Unit) {
+    block(a)
+    block(b)
+}
 
-object Resources {
+inline fun <T> forEach(a: T, b: T, c: T, block: (T) -> Unit) {
+    block(a)
+    block(b)
+    block(c)
+}
 
-    // When the program is first started, save a timestamp so the total screen time can be calculated
-    @JvmField
-    val PROGRAM_START_TIME = System.currentTimeMillis()
+inline fun <T> forEach(a: T, b: T, c: T, d: T, block: (T) -> Unit) {
+    block(a)
+    block(b)
+    block(c)
+    block(d)
+}
 
-    val timeSinceStart: Long get() = System.currentTimeMillis() - PROGRAM_START_TIME
-
-    fun get(name: String): URL = this.javaClass.getResource(name)
-
-    fun getAsStream(name: String): InputStream = this.javaClass.getResourceAsStream(name)
-
+inline fun sleepSafely(millis: Long, onInterrupt: (e: InterruptedException) -> Unit) {
+    try {
+        Thread.sleep(millis)
+    }
+    catch (e: InterruptedException) {
+        onInterrupt(e)
+    }
 }

@@ -17,10 +17,11 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty
+package io.github.thomorl.twenty.ui
 
+import io.github.thomorl.twenty.util.forEach
+import io.github.thomorl.twenty.util.sleepSafely
 import java.awt.Color
-import java.awt.Component
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 import kotlin.math.cos
@@ -51,7 +52,7 @@ class InterruptWindow : AnimatedDialog("20ty") {
 
         forEach(message, counter) {
             it.foreground = Color.WHITE
-            it.alignmentX = Component.CENTER_ALIGNMENT
+            it.alignmentX = CENTER_ALIGNMENT
         }
 
         forEach(message, Box.createVerticalStrut(message.font.size), counter,
@@ -73,7 +74,7 @@ class InterruptWindow : AnimatedDialog("20ty") {
         // Set the counter and the colors
         counter.text = "${(elapsedTime / 1000).let { if (it >= 21) 40-it else it }}"
 
-        val fg: Int = (a * cos(b*elapsedTime)).toInt() + Ah
+        val fg: Int = (a * cos(b *elapsedTime)).toInt() + Ah
         val bg: Int = 255 - fg
 
         val fgColor = Color(fg, fg, fg)
