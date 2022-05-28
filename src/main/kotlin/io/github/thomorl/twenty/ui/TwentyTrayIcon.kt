@@ -35,6 +35,11 @@ class TwentyTrayIcon(twentyActionListener: ActionListener) : TrayIcon(Toolkit.ge
                 addActionListener(twentyActionListener)
             }
             separator()
+            menuItem("Pause")
+            separator()
+            menuItem("Info")
+            menuItem("Settings")
+            separator()
             menuItem("Exit") {
                 addActionListener {
                     exitProcess(0)
