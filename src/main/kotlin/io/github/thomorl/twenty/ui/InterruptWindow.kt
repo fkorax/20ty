@@ -26,7 +26,7 @@ import javax.swing.*
 import javax.swing.border.EmptyBorder
 import kotlin.math.cos
 
-class InterruptWindow : AnimatedDialog("20ty") {
+class InterruptWindow : AnimatedJFrame("20ty") {
     private val contentBox = JPanel()
     private val message = JBigLabel("Look at least 20 m into the distance.", 2.0f)
     private val counter = JBigLabel("0", 6.0f)
@@ -37,10 +37,14 @@ class InterruptWindow : AnimatedDialog("20ty") {
         private const val T = 40_000
         private const val Ah = A / 2
         private const val a: Double = A / 2.0
-        private const val b: Double = Math.PI / T   // Not 2*PI because we don't want to cycle back
+        private const val b: Double = Math.PI / T   // Not 2*PI because the animation is not supposed to loop back
+                                                    // to the start value (only from start to end)
     }
 
     init {
+        // Window configuration
+        this.type = Type.NORMAL
+
         val padSize = counter.font.size
 
         // Content Pane configuration
@@ -58,17 +62,17 @@ class InterruptWindow : AnimatedDialog("20ty") {
         forEach(message, Box.createVerticalStrut(message.font.size), counter,
             this::add)
 
-        defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
+        defaultCloseOperation = WindowConstants.HIDE_ON_CLOSE
         isResizable = false
 
         pack()
     }
 
     override fun animate(currentThread: Thread, sleepTime: Long) {
-        animateStep(currentThread, sleepTime, System.currentTimeMillis())
+        animate(currentThread, sleepTime, System.currentTimeMillis())
     }
 
-    private tailrec fun animateStep(currentThread: Thread, sleepTime: Long, startTime: Long) {
+    private tailrec fun animate(currentThread: Thread, sleepTime: Long, startTime: Long) {
         val elapsedTime: Long = System.currentTimeMillis() - startTime
 
         // Set the counter and the colors
@@ -112,7 +116,7 @@ class InterruptWindow : AnimatedDialog("20ty") {
                 return
             }
             // Otherwise, continue the recursion
-            else -> animateStep(currentThread, sleepTime, startTime)
+            else -> animate(currentThread, sleepTime, startTime)
         }
 
     }

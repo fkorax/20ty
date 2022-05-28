@@ -30,7 +30,7 @@ import javax.swing.JLabel
 import javax.swing.WindowConstants
 import javax.swing.border.EmptyBorder
 
-class InfoWindow : AnimatedDialog("20ty") {
+class InfoWindow : AnimatedJFrame("20ty") {
     private val dateFormat = SimpleDateFormat("HH:mm:ss", locale).apply {
         // Time Zone set to UTC since elapsed time is displayed
         timeZone = TimeZone.getTimeZone("UTC")

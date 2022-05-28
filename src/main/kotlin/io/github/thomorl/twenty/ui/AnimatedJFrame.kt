@@ -19,12 +19,11 @@
 
 package io.github.thomorl.twenty.ui
 
-import java.awt.Frame
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import javax.swing.JDialog
+import javax.swing.JFrame
 
-abstract class AnimatedDialog(title: String) : JDialog(null as Frame?, title, false), Runnable {
+abstract class AnimatedJFrame(title: String) : JFrame(title), Runnable {
     var animationFPS: Long = UIConstants.DEFAULT_ANIMATION_FPS
 
     init {
@@ -32,7 +31,7 @@ abstract class AnimatedDialog(title: String) : JDialog(null as Frame?, title, fa
         this.addComponentListener(object : ComponentAdapter() {
             override fun componentShown(e: ComponentEvent?) {
                 // Start an animation thread
-                Thread(this@AnimatedDialog).start()
+                Thread(this@AnimatedJFrame).start()
                 // (animation thread closes automatically)
             }
         })
