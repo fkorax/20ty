@@ -22,10 +22,10 @@ package io.github.thomorl.twenty.ui
 import java.awt.MenuItem
 import java.awt.PopupMenu
 
-inline fun popupMenu(label: String, block: PopupMenu.() -> Unit): PopupMenu =
+inline fun popupMenu(label: String, block: PopupMenu.() -> Unit = {}): PopupMenu =
     PopupMenu(label).apply(block)
 
-inline fun PopupMenu.menuItem(text: String, block: MenuItem.() -> Unit): MenuItem =
+inline fun PopupMenu.menuItem(text: String, block: MenuItem.() -> Unit = {}): MenuItem =
     this.add(MenuItem(text).apply(block))
 
 fun PopupMenu.separator() = this.addSeparator()
