@@ -19,6 +19,8 @@
 
 package io.github.thomorl.twenty.ui
 
+import io.github.thomorl.twenty.ui.util.AnimatedJFrame
+import io.github.thomorl.twenty.ui.util.scaledJLabel
 import io.github.thomorl.twenty.util.forEach
 import io.github.thomorl.twenty.util.sleepSafely
 import java.awt.Color

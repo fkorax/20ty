@@ -24,12 +24,6 @@ import java.net.URL
 
 object Resources {
 
-    // When the program is first started, save a timestamp so the total screen time can be calculated
-    @JvmField
-    val PROGRAM_START_TIME = System.currentTimeMillis()
-
-    val timeSinceStart: Long get() = System.currentTimeMillis() - PROGRAM_START_TIME
-
     fun get(name: String): URL = this.javaClass.getResource(name)
 
     fun getAsStream(name: String): InputStream = this.javaClass.getResourceAsStream(name)

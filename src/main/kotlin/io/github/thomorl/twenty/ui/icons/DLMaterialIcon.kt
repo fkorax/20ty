@@ -17,15 +17,27 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty.ui
+package io.github.thomorl.twenty.ui.icons
 
-import java.awt.MenuItem
-import java.awt.PopupMenu
+import io.github.thomorl.twenty.ui.UIConstants
+import java.awt.Component
+import java.awt.Graphics
+import javax.swing.Icon
 
-inline fun popupMenu(label: String, block: PopupMenu.() -> Unit = {}): PopupMenu =
-    PopupMenu(label).apply(block)
+/**
+ * An icon which paints the dense live area of a material icon (`16dp`).
+ * For an actual material icon, `2dp` of padding around the perimeter are required.
+ *
+ * See [Material Design - System icons](https://material.io/design/iconography/system-icons.html#grid-and-keyline-shapes).
+ */
+interface DLMaterialIcon : Icon {
 
-inline fun PopupMenu.menuItem(text: String, block: MenuItem.() -> Unit = {}): MenuItem =
-    this.add(MenuItem(text).apply(block))
+    override fun paintIcon(c: Component?, g: Graphics?, x: Int, y: Int) {
+        g?.color = UIConstants.ICON_COLOR
+    }
 
-fun PopupMenu.separator() = this.addSeparator()
+    override fun getIconWidth(): Int = 16
+
+    override fun getIconHeight(): Int = 16
+
+}

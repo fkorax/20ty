@@ -17,14 +17,17 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty.ui
+package io.github.thomorl.twenty.ui.icons
 
-import java.awt.Color
+import java.awt.Component
+import java.awt.Graphics
 
-object UIConstants {
-    const val DEFAULT_ANIMATION_FPS = 20L
+class StopIcon : DLMaterialIcon {
 
-    @JvmField
-    val ICON_COLOR = Color(0x212121)    // Material Grey 900
+    override fun paintIcon(c: Component?, g: Graphics?, x: Int, y: Int) {
+        super.paintIcon(c, g, x, y)
+
+        g?.fillRect(x+4, y+4, 8, 8)
+    }
 
 }

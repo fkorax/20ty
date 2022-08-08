@@ -19,49 +19,52 @@
 
 package io.github.thomorl.twenty
 
-import io.github.thomorl.twenty.ui.InfoWindow
 import io.github.thomorl.twenty.ui.InterruptWindow
-import io.github.thomorl.twenty.ui.TwentyTrayIcon
-import java.awt.SystemTray
-import java.util.concurrent.ScheduledThreadPoolExecutor
-import java.util.concurrent.TimeUnit
-import javax.swing.SwingUtilities
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import javax.swing.UIManager
+import kotlin.system.exitProcess
 
 object Twenty {
+    // When the program is first started, save a timestamp so the total screen time can be calculated
+    @JvmField
+    val startTime: Long = System.currentTimeMillis()
+
+    val timeSinceStart: Long get() = System.currentTimeMillis() - startTime
+
+    var developerMode: Boolean = false
+        private set
 
     @JvmStatic
     fun main(args: Array<String>) {
-        // Set LookAndFeel
+        // Use the system's LookAndFeel
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
 
-        if (SystemTray.isSupported()) {
-            val infoWindow = InfoWindow()
-
-            val trayIcon = TwentyTrayIcon {
-                SwingUtilities.invokeLater {
-                    // Show the InfoWindow, centered on screen
-                    infoWindow.setLocationRelativeTo(null)
-                    infoWindow.isVisible = true
-                }
+        // TODO Convert args to flags (and detect unknown arguments!)
+        val runAppMain: Boolean = when {
+            "windowTest" in args -> {
+                windowTest()
+                false
             }
-
-            SystemTray.getSystemTray().add(trayIcon)
+            "-dev" in args -> {
+                developerMode = true
+                true
+            }
+            else -> true
         }
+        if (runAppMain) {
+            TwentyApp().main()
+        }
+    }
 
-        val interruptWindow = InterruptWindow()
-
-        // The Schedulator (Schedule(d) Executor / Schedule + Regulator)
-        val executor = ScheduledThreadPoolExecutor(1)
-        // Schedule the interrupt task at a fixed delay
-        executor.scheduleWithFixedDelay(
-            { SwingUtilities.invokeLater {
-                // Center and show the interrupt window
-                interruptWindow.setLocationRelativeTo(null)
-                interruptWindow.isVisible = true
-                // Put the window to the front, so the user sees it
-                interruptWindow.toFront()
-            }}, 20, 20, TimeUnit.MINUTES)
+    private fun windowTest() {
+        val testWindow = InterruptWindow()
+        testWindow.addComponentListener(object : ComponentAdapter() {
+            override fun componentHidden(e: ComponentEvent?) {
+                exitProcess(0)
+            }
+        })
+        testWindow.isVisible = true
     }
 
 }

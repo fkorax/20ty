@@ -20,27 +20,44 @@
 package io.github.thomorl.twenty.ui
 
 import io.github.thomorl.twenty.Resources
+import io.github.thomorl.twenty.Twenty
+import io.github.thomorl.twenty.ui.util.item
+import io.github.thomorl.twenty.ui.util.menu
+import io.github.thomorl.twenty.ui.util.popupMenu
+import io.github.thomorl.twenty.ui.util.separator
 import java.awt.Font
 import java.awt.Toolkit
 import java.awt.TrayIcon
 import java.awt.event.ActionListener
 import kotlin.system.exitProcess
 
-class TwentyTrayIcon(twentyActionListener: ActionListener) : TrayIcon(Toolkit.getDefaultToolkit().getImage(Resources.get("ui/icons/test-icon.png")), "20ty") {
+class TwentyTrayIcon(twentyFun: () -> Unit, interruptFun: () -> Unit) : TrayIcon(
+    Toolkit.getDefaultToolkit().getImage(Resources.get("ui/icons/test-icon.png")), "20ty") {
 
     init {
+        // Used multiple times:
+        val twentyActionListener = ActionListener { twentyFun() }
+
         this.popupMenu = popupMenu("20ty") {
-            menuItem("20ty") {
-                this.font = (font ?: Font.decode(null))?.deriveFont(Font.BOLD) ?: Font(Font.SANS_SERIF, Font.BOLD, 14)
+            item("20ty") {
+                font = (font ?: Font.decode(null))?.deriveFont(Font.BOLD) ?: Font(Font.SANS_SERIF, Font.BOLD, 14)
                 addActionListener(twentyActionListener)
             }
             separator()
-            menuItem("Pause")
+            item("Pause")      // Continue
             separator()
-            menuItem("Info")
-            menuItem("Settings")
-            separator()
-            menuItem("Exit") {
+            // Insert developer options if developer mode is activated
+            if (Twenty.developerMode) {
+                menu("Developer Options") {
+                    item("Test Window") {
+                        addActionListener {
+                            interruptFun()
+                        }
+                    }
+                }
+                separator()
+            }
+            item("Exit") {
                 addActionListener {
                     exitProcess(0)
                 }
@@ -48,6 +65,8 @@ class TwentyTrayIcon(twentyActionListener: ActionListener) : TrayIcon(Toolkit.ge
         }
 
         this.isImageAutoSize = true
+
+        this.addActionListener(twentyActionListener)
     }
 
 }

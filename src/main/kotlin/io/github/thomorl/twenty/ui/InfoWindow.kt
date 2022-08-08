@@ -19,7 +19,9 @@
 
 package io.github.thomorl.twenty.ui
 
-import io.github.thomorl.twenty.Resources
+import io.github.thomorl.twenty.Twenty
+import io.github.thomorl.twenty.ui.util.AnimatedJFrame
+import io.github.thomorl.twenty.ui.util.scaledJLabel
 import io.github.thomorl.twenty.util.forEach
 import io.github.thomorl.twenty.util.sleepSafely
 import java.text.SimpleDateFormat
@@ -78,7 +80,7 @@ class InfoWindow : AnimatedJFrame("20ty") {
 
     override fun animate(currentThread: Thread, sleepTime: Long) {
         while (!currentThread.isInterrupted && this.isVisible) {
-            screenTimeDisplay.text = dateFormat.format(Date(Resources.timeSinceStart))
+            screenTimeDisplay.text = dateFormat.format(Date(Twenty.timeSinceStart))
 
             sleepSafely(sleepTime) {
                 // Instant abort

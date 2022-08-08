@@ -17,8 +17,9 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty.ui
+package io.github.thomorl.twenty.ui.util
 
+import io.github.thomorl.twenty.ui.UIConstants
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import javax.swing.JFrame

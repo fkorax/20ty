@@ -17,14 +17,14 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty.ui
+package io.github.thomorl.twenty.ui.util
 
-import java.awt.Color
+import javax.swing.JLabel
 
-object UIConstants {
-    const val DEFAULT_ANIMATION_FPS = 20L
+fun scaledJLabel(text: String, scaleFactor: Float) = JLabel(text).apply {
+    this.scale(scaleFactor)
+}
 
-    @JvmField
-    val ICON_COLOR = Color(0x212121)    // Material Grey 900
-
+fun JLabel.scale(factor: Float) {
+    font = font.deriveFont(font.size2D * factor)
 }
