@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022  Thomas Orlando
+ * Copyright (c) 2022  Franchesko Korako
  *
  * This file is part of 20ty.
  *

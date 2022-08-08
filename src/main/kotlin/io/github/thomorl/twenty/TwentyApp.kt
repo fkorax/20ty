@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022  Thomas Orlando
+ * Copyright (c) 2022  Franchesko Korako
  *
  * This file is part of 20ty.
  *
@@ -61,6 +61,7 @@ class TwentyApp {
             // TODO Allow the user to turn this off, and later,
             //  to choose in a combo box between a System Beep, 20ty sounds, and a custom sound file
             Toolkit.getDefaultToolkit().beep()
+            // TODO Allow notifications to be turned on/off
             trayIcon?.displayMessage("Look outside", "Look 20 m into the distance.", TrayIcon.MessageType.NONE)
             // TODO Also beep on window hidden
         }
