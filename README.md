@@ -1,6 +1,10 @@
 <p align="center">
-    <img width="200" src="images/logo.svg"/>
+    <img width="300" src="images/logo.svg" alt="20ty"/>
 </p>
+
+<hr/>
+
+[![License](https://img.shields.io/github/license/fkorax/20ty?style=flat-square)](https://github.com/fkorax/20ty/blob/main/LICENSE)
 
 ## Overview
 
