@@ -32,7 +32,7 @@ import java.awt.event.ActionListener
 import kotlin.system.exitProcess
 
 class TwentyTrayIcon(twentyFun: () -> Unit, interruptFun: () -> Unit) : TrayIcon(
-    Toolkit.getDefaultToolkit().getImage(Resources.get("ui/icons/test-icon.png")), "20ty") {
+    Toolkit.getDefaultToolkit().getImage(Resources.get("ui/icons/icon-16.png")), "20ty") {
 
     init {
         // Used multiple times:
