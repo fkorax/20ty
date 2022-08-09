@@ -17,14 +17,28 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty.ui
+package io.github.fkorax.twenty.ui.icons
 
-import java.awt.Color
+import java.awt.Component
+import java.awt.Graphics
+import java.awt.Polygon
 
-object UIConstants {
-    const val DEFAULT_ANIMATION_FPS = 20L
+class PlayIcon : DLMaterialIcon {
+    // The base arrow shape
+    private val baseShape = Polygon(
+        intArrayOf(5, 12, 5),
+        intArrayOf(4, 8, 12),
+        3
+    )
 
-    @JvmField
-    val ICON_COLOR = Color(0x212121)    // Material Grey 900
+    override fun paintIcon(c: Component?, g: Graphics?, x: Int, y: Int) {
+        super.paintIcon(c, g, x, y)
+
+        if (g != null) {
+            baseShape.translate(x, y)
+            g.fillPolygon(baseShape)
+            baseShape.translate(-x, -y)
+        }
+    }
 
 }

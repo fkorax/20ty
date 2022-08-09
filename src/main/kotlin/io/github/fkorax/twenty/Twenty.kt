@@ -17,10 +17,10 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty
+package io.github.fkorax.twenty
 
-import io.github.thomorl.twenty.ui.InterruptWindow
-import io.github.thomorl.twenty.util.enrichSystemProperties
+import io.github.fkorax.twenty.ui.InterruptWindow
+import io.github.fkorax.twenty.util.enrichSystemProperties
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import javax.swing.UIManager

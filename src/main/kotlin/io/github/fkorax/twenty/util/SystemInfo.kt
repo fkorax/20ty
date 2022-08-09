@@ -17,7 +17,7 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty.util
+package io.github.fkorax.twenty.util
 
 import java.io.BufferedReader
 import java.io.InputStreamReader

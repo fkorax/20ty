@@ -17,17 +17,15 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty.ui.icons
+package io.github.fkorax.twenty
 
-import java.awt.Component
-import java.awt.Graphics
+import java.io.InputStream
+import java.net.URL
 
-class StopIcon : DLMaterialIcon {
+object Resources {
 
-    override fun paintIcon(c: Component?, g: Graphics?, x: Int, y: Int) {
-        super.paintIcon(c, g, x, y)
+    fun get(name: String): URL = this.javaClass.getResource(name)
 
-        g?.fillRect(x+4, y+4, 8, 8)
-    }
+    fun getAsStream(name: String): InputStream = this.javaClass.getResourceAsStream(name)
 
 }

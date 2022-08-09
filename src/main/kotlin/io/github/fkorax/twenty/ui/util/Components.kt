@@ -17,15 +17,14 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty
+package io.github.fkorax.twenty.ui.util
 
-import java.io.InputStream
-import java.net.URL
+import javax.swing.JLabel
 
-object Resources {
+fun scaledJLabel(text: String, scaleFactor: Float) = JLabel(text).apply {
+    this.scale(scaleFactor)
+}
 
-    fun get(name: String): URL = this.javaClass.getResource(name)
-
-    fun getAsStream(name: String): InputStream = this.javaClass.getResourceAsStream(name)
-
+fun JLabel.scale(factor: Float) {
+    font = font.deriveFont(font.size2D * factor)
 }

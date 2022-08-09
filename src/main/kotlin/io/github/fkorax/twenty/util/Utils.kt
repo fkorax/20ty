@@ -17,28 +17,31 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty.ui.icons
+package io.github.fkorax.twenty.util
 
-import java.awt.Component
-import java.awt.Graphics
-import java.awt.Polygon
+inline fun <T> forEach(a: T, b: T, block: (T) -> Unit) {
+    block(a)
+    block(b)
+}
 
-class PlayIcon : DLMaterialIcon {
-    // The base arrow shape
-    private val baseShape = Polygon(
-        intArrayOf(5, 12, 5),
-        intArrayOf(4, 8, 12),
-        3
-    )
+inline fun <T> forEach(a: T, b: T, c: T, block: (T) -> Unit) {
+    block(a)
+    block(b)
+    block(c)
+}
 
-    override fun paintIcon(c: Component?, g: Graphics?, x: Int, y: Int) {
-        super.paintIcon(c, g, x, y)
+inline fun <T> forEach(a: T, b: T, c: T, d: T, block: (T) -> Unit) {
+    block(a)
+    block(b)
+    block(c)
+    block(d)
+}
 
-        if (g != null) {
-            baseShape.translate(x, y)
-            g.fillPolygon(baseShape)
-            baseShape.translate(-x, -y)
-        }
+inline fun sleepSafely(millis: Long, onInterrupt: (e: InterruptedException) -> Unit) {
+    try {
+        Thread.sleep(millis)
     }
-
+    catch (e: InterruptedException) {
+        onInterrupt(e)
+    }
 }

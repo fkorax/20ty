@@ -17,22 +17,14 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty.ui.util
+package io.github.fkorax.twenty.ui
 
-import java.awt.Menu
-import java.awt.MenuItem
-import java.awt.PopupMenu
+import java.awt.Color
 
-inline fun popupMenu(label: String, block: PopupMenu.() -> Unit = {}): PopupMenu =
-    PopupMenu(label).apply(block)
+object UIConstants {
+    const val DEFAULT_ANIMATION_FPS = 20L
 
-inline fun PopupMenu.item(text: String, block: MenuItem.() -> Unit = {}): MenuItem =
-    this.add(MenuItem(text).apply(block))
+    @JvmField
+    val ICON_COLOR = Color(0x212121)    // Material Grey 900
 
-inline fun PopupMenu.menu(text: String, block: Menu.() -> Unit = {}): Menu =
-    this.add(Menu(text).apply(block)) as Menu
-
-inline fun Menu.item(text: String, block: MenuItem.() -> Unit = {}): MenuItem =
-    this.add(MenuItem(text).apply(block))
-
-fun PopupMenu.separator() = this.addSeparator()
+}

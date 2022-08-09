@@ -17,11 +17,11 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty
+package io.github.fkorax.twenty
 
-import io.github.thomorl.twenty.ui.InfoWindow
-import io.github.thomorl.twenty.ui.InterruptWindow
-import io.github.thomorl.twenty.ui.TwentyTrayIcon
+import io.github.fkorax.twenty.ui.InfoWindow
+import io.github.fkorax.twenty.ui.InterruptWindow
+import io.github.fkorax.twenty.ui.TwentyTrayIcon
 import java.awt.SystemTray
 import java.awt.Toolkit
 import java.awt.TrayIcon

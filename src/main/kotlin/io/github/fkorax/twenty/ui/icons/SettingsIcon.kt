@@ -17,7 +17,7 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty.ui.icons
+package io.github.fkorax.twenty.ui.icons
 
 import javax.swing.ImageIcon
 

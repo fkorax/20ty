@@ -17,31 +17,17 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.thomorl.twenty.util
+package io.github.fkorax.twenty.ui.icons
 
-inline fun <T> forEach(a: T, b: T, block: (T) -> Unit) {
-    block(a)
-    block(b)
-}
+import java.awt.Component
+import java.awt.Graphics
 
-inline fun <T> forEach(a: T, b: T, c: T, block: (T) -> Unit) {
-    block(a)
-    block(b)
-    block(c)
-}
+class StopIcon : DLMaterialIcon {
 
-inline fun <T> forEach(a: T, b: T, c: T, d: T, block: (T) -> Unit) {
-    block(a)
-    block(b)
-    block(c)
-    block(d)
-}
+    override fun paintIcon(c: Component?, g: Graphics?, x: Int, y: Int) {
+        super.paintIcon(c, g, x, y)
 
-inline fun sleepSafely(millis: Long, onInterrupt: (e: InterruptedException) -> Unit) {
-    try {
-        Thread.sleep(millis)
+        g?.fillRect(x+4, y+4, 8, 8)
     }
-    catch (e: InterruptedException) {
-        onInterrupt(e)
-    }
+
 }
