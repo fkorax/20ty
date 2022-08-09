@@ -19,26 +19,8 @@
 
 package io.github.thomorl.twenty.ui.icons
 
-import io.github.thomorl.twenty.ui.UIConstants
-import java.awt.Component
-import java.awt.Graphics
-import javax.swing.Icon
+import javax.swing.ImageIcon
 
-/**
- * An icon which paints the dense live area of a material icon (`16dp`).
- * For an actual material icon, `2dp` of padding around the perimeter is required.
- *
- * See [Material Design - System icons](https://material.io/design/iconography/system-icons.html#grid-and-keyline-shapes).
- */
-// TODO Make icons scalable, but with baked parameters so no recalculation can happen
-interface DLMaterialIcon : Icon {
-
-    override fun paintIcon(c: Component?, g: Graphics?, x: Int, y: Int) {
-        g?.color = UIConstants.ICON_COLOR
-    }
-
-    override fun getIconWidth(): Int = 16
-
-    override fun getIconHeight(): Int = 16
+class SettingsIcon : ImageIcon(SettingsIcon::class.java.getResource("settings-16.png")) {
 
 }

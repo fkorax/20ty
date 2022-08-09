@@ -20,16 +20,15 @@
 package io.github.thomorl.twenty.ui
 
 import io.github.thomorl.twenty.Twenty
+import io.github.thomorl.twenty.ui.icons.SettingsIcon
 import io.github.thomorl.twenty.ui.util.AnimatedJFrame
 import io.github.thomorl.twenty.ui.util.scaledJLabel
 import io.github.thomorl.twenty.util.forEach
 import io.github.thomorl.twenty.util.sleepSafely
+import java.awt.BorderLayout
 import java.text.SimpleDateFormat
 import java.util.*
-import javax.swing.Box
-import javax.swing.JButton
-import javax.swing.JLabel
-import javax.swing.WindowConstants
+import javax.swing.*
 import javax.swing.border.EmptyBorder
 
 class InfoWindow : AnimatedJFrame("20ty") {
@@ -51,14 +50,22 @@ class InfoWindow : AnimatedJFrame("20ty") {
         // Screen Time and Time to the next 20ty Event
         val screenTimeLabel = JLabel("Screen Time")
 
-        // The 'OK' Button
-        val closeButton = JButton("Close")
-        closeButton.addActionListener {
-            this@InfoWindow.isVisible = false
+        // The buttons panel
+        val buttons = JPanel(BorderLayout()).apply {
+            // The 'Close' Button
+            val closeButton = JButton("Close")
+            closeButton.addActionListener {
+                this@InfoWindow.isVisible = false
+            }
+            add(closeButton, BorderLayout.WEST)
+
+            // The 'Settings' Button
+            val settingsButton = JButton("Settings", SettingsIcon())
+            add(settingsButton, BorderLayout.EAST)
         }
 
         // Set alignments
-        forEach(screenTimeLabel, screenTimeDisplay, closeButton) {
+        forEach(screenTimeLabel, screenTimeDisplay, buttons) {
             it.alignmentX = CENTER_ALIGNMENT
         }
 
@@ -67,7 +74,7 @@ class InfoWindow : AnimatedJFrame("20ty") {
             screenTimeLabel,
             screenTimeDisplay,
             Box.createVerticalStrut(padSize),
-            closeButton,
+            buttons,
             this::add)
 
         // Window configuration

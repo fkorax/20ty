@@ -29,10 +29,23 @@ import java.awt.Font
 import java.awt.Toolkit
 import java.awt.TrayIcon
 import java.awt.event.ActionListener
+import java.net.URL
 import kotlin.system.exitProcess
 
+// TODO Eventually replace this with native code and only use as fallback
 class TwentyTrayIcon(twentyFun: () -> Unit, interruptFun: () -> Unit) : TrayIcon(
-    Toolkit.getDefaultToolkit().getImage(Resources.get("ui/icons/icon-16.png")), "20ty") {
+    Toolkit.getDefaultToolkit().getImage(trayIconResource), "20ty") {
+
+    companion object {
+        @JvmStatic
+        private val trayIconResource: URL get() = Resources.get(
+            // Use a smaller Ubuntu notification tray compatible icon on Ubuntu 20.0 and later
+            if (System.getProperty("lsb.description").startsWith("Ubuntu") &&
+                (System.getProperty("lsb.release").substringBefore('.').toIntOrNull() ?: 0) >= 20)
+                "ui/icons/icon-8.png"
+            else
+                "ui/icons/icon-16.png").also { println(System.getProperty("os.name") + " | " + System.getProperty("os.version")) }
+    }
 
     init {
         // Used multiple times:
