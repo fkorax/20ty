@@ -20,6 +20,7 @@
 package io.github.thomorl.twenty
 
 import io.github.thomorl.twenty.ui.InterruptWindow
+import io.github.thomorl.twenty.util.enrichSystemProperties
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import javax.swing.UIManager
@@ -37,7 +38,11 @@ object Twenty {
 
     @JvmStatic
     fun main(args: Array<String>) {
+        // Enrich the system properties first
+        enrichSystemProperties()
+
         // Use the system's LookAndFeel
+        // TODO Maybe switch to an alternative LaF?
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
 
         // TODO Convert args to flags (and detect unknown arguments!)
