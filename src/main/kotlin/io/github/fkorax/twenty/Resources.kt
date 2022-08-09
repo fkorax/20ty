@@ -24,8 +24,8 @@ import java.net.URL
 
 object Resources {
 
-    fun get(name: String): URL = this.javaClass.getResource(name)
+    fun get(name: String): URL? = this.javaClass.getResource(name)
 
-    fun getAsStream(name: String): InputStream = this.javaClass.getResourceAsStream(name)
+    fun getAsStream(name: String): InputStream? = this.javaClass.getResourceAsStream(name)
 
 }

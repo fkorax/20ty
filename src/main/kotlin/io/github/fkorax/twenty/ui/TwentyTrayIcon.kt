@@ -44,7 +44,7 @@ class TwentyTrayIcon(twentyFun: () -> Unit, interruptFun: () -> Unit) : TrayIcon
                 (System.getProperty("lsb.release").substringBefore('.').toIntOrNull() ?: 0) >= 20)
                 "ui/icons/icon-8.png"
             else
-                "ui/icons/icon-16.png").also { println(System.getProperty("os.name") + " | " + System.getProperty("os.version")) }
+                "ui/icons/icon-16.png")!!.also { println(System.getProperty("os.name") + " | " + System.getProperty("os.version")) }
     }
 
     init {
