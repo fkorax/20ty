@@ -27,8 +27,6 @@ const val LINUX = "linux"
 const val MACOS = "macos"
 const val BSD = "bsd"
 
-private var enriched = false
-
 /**
  * Enriches the System properties with the following keys:
  * `"os.family"`, currently one of `"windows"`, `"macos"`, `"linux"`, `"bsd"`, or `null`;
@@ -37,7 +35,7 @@ private var enriched = false
  * `"lsb.release"`, the output of `lsb_release -rs`.
  */
 fun enrichSystemProperties() {
-    if (enriched) {
+    if (System.getProperty("util.enriched") == "true") {
         error("System properties have already been enriched")
     }
     // First detect the OS family
@@ -63,6 +61,8 @@ fun enrichSystemProperties() {
                 }
             }
         }
+        // Set enriched to true
+        System.setProperty("util.enriched", "true")
     }
 }
 
