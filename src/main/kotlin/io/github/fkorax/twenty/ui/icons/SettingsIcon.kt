@@ -19,8 +19,7 @@
 
 package io.github.fkorax.twenty.ui.icons
 
+import io.github.fkorax.twenty.Resources
 import javax.swing.ImageIcon
 
-class SettingsIcon : ImageIcon(SettingsIcon::class.java.getResource("settings-16.png")) {
-
-}
+class SettingsIcon : ImageIcon(Resources.get("ui/icons/settings-16.png"))
