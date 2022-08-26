@@ -19,52 +19,32 @@
 
 package io.github.fkorax.twenty
 
+import io.github.fkorax.twenty.ui.HumanInterrupter
 import io.github.fkorax.twenty.ui.InfoWindow
-import io.github.fkorax.twenty.ui.InterruptWindow
 import io.github.fkorax.twenty.ui.TwentyTrayIcon
 import java.awt.SystemTray
-import java.awt.Toolkit
 import java.awt.TrayIcon
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import javax.swing.SwingUtilities
 
 class TwentyApp {
+    private val interrupter = HumanInterrupter()
     // TODO The tray is optional. But what if there is no tray support?
     private val trayIcon: TrayIcon? =
         if (SystemTray.isSupported())
-            TwentyTrayIcon(::showInfoWindow, ::showInterruptWindow).also(SystemTray.getSystemTray()::add)
+            TwentyTrayIcon(::showInfoWindow, interrupter::interruptHuman).also(SystemTray.getSystemTray()::add)
         else
             null
     private val infoWindow = InfoWindow()
-    private val interruptWindow = InterruptWindow()
 
     fun main() {
-        // The Schedulator (Schedule(d) Executor / Schedule + Regulator)
+        // TODO Use the Schedulator (Schedule(d) Executor / Schedule + Regulator)
+        //  to do stuff like this
         val executor = ScheduledThreadPoolExecutor(1)
         // Schedule the interrupt task at a fixed delay
         executor.scheduleWithFixedDelay(
-            ::showInterruptWindow, 20, 20, TimeUnit.MINUTES)
-    }
-
-    private fun showInterruptWindow(): Unit = if (interruptWindow.isVisible) {
-        println("Interrupt Window is still visible. Not showing again.")
-    }
-    else {
-        SwingUtilities.invokeLater {
-            // Center and show the interrupt window
-            interruptWindow.setLocationRelativeTo(null)
-            interruptWindow.isVisible = true
-            // Put the window to the front, so the user sees it
-            interruptWindow.toFront()
-            // Beep
-            // TODO Allow the user to turn this off, and later,
-            //  to choose in a combo box between a System Beep, 20ty sounds, and a custom sound file
-            Toolkit.getDefaultToolkit().beep()
-            // TODO Allow notifications to be turned on/off
-            trayIcon?.displayMessage("Look outside", "Look 20 m into the distance.", TrayIcon.MessageType.NONE)
-            // TODO Also beep on window hidden
-        }
+            interrupter::interruptHuman, 20, 20, TimeUnit.MINUTES)
     }
 
     private fun showInfoWindow() {

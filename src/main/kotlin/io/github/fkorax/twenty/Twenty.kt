@@ -19,7 +19,7 @@
 
 package io.github.fkorax.twenty
 
-import io.github.fkorax.twenty.ui.InterruptWindow
+import io.github.fkorax.twenty.ui.HumanInterrupter
 import io.github.fkorax.twenty.util.enrichSystemProperties
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -63,13 +63,11 @@ object Twenty {
     }
 
     private fun windowTest() {
-        val testWindow = InterruptWindow()
-        testWindow.addComponentListener(object : ComponentAdapter() {
+        HumanInterrupter.testWindow(object : ComponentAdapter() {
             override fun componentHidden(e: ComponentEvent?) {
                 exitProcess(0)
             }
         })
-        testWindow.isVisible = true
     }
 
 }
