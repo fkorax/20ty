@@ -21,21 +21,14 @@ package io.github.fkorax.twenty
 
 import io.github.fkorax.twenty.ui.HumanInterrupter
 import io.github.fkorax.twenty.ui.InfoWindow
-import io.github.fkorax.twenty.ui.TwentyTrayIcon
-import java.awt.SystemTray
-import java.awt.TrayIcon
+import io.github.fkorax.twenty.ui.TraySupport
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import javax.swing.SwingUtilities
 
 class TwentyApp {
     private val interrupter = HumanInterrupter()
-    // TODO The tray is optional. But what if there is no tray support?
-    private val trayIcon: TrayIcon? =
-        if (SystemTray.isSupported())
-            TwentyTrayIcon(::showInfoWindow, interrupter::interruptHuman).also(SystemTray.getSystemTray()::add)
-        else
-            null
+    private val traySupport = TraySupport.getTraySupport(::showInfoWindow, interrupter::interruptHuman)
     private val infoWindow = InfoWindow()
 
     fun main() {
