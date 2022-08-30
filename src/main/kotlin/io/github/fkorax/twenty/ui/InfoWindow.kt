@@ -21,24 +21,74 @@ package io.github.fkorax.twenty.ui
 
 import io.github.fkorax.twenty.Twenty
 import io.github.fkorax.twenty.ui.icons.SettingsIcon
-import io.github.fkorax.twenty.ui.util.AnimatedJFrame
 import io.github.fkorax.twenty.ui.util.scaledJLabel
 import io.github.fkorax.twenty.util.forEach
-import io.github.fkorax.twenty.util.sleepSafely
+import java.awt.AWTEvent
 import java.awt.BorderLayout
+import java.awt.Toolkit
+import java.awt.event.*
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.logging.Logger
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 
-class InfoWindow : AnimatedJFrame("20ty") {
-    private val dateFormat = SimpleDateFormat("HH:mm:ss", locale).apply {
+class InfoWindow : JFrame("20ty") {
+    // TODO Move the screen time display into a separate component
+    private val screenTimeDisplay = scaledJLabel("<SCREEN TIME>", 2.0f)
+    // Only hours and minutes are important, seconds need to be constantly updated and
+    // are just visual noise, distracting the human user
+    private val dateFormat = SimpleDateFormat("HH:mm", locale).apply {
         // Time Zone set to UTC since elapsed time is displayed
         timeZone = TimeZone.getTimeZone("UTC")
     }
-    private val screenTimeDisplay = scaledJLabel("<SCREEN TIME>", 2.0f)
+
+    private val logger = Logger.getLogger(this::class.qualifiedName)
+
+    private var lastUpdateMillis = 0L
+    private fun updateScreenTimeDisplay(millis: Long) = synchronized(screenTimeDisplay) {
+        if (System.currentTimeMillis() - lastUpdateMillis >= 1000) {
+            logger.finest("Updated screen time display.")
+            screenTimeDisplay.text = dateFormat.format(millis)
+            lastUpdateMillis = System.currentTimeMillis()
+        }
+    }
+
+    private fun updateScreenTimeDisplay() =
+        updateScreenTimeDisplay(Twenty.timeSinceStart)
 
     init {
+        // For continuous updating of this information, we don't need an external Thread,
+        // we can rely on the user's actions as impulse givers to do that.
+
+        // We react to mouse moved events to update
+        // the time information, but in relatively fixed time intervals,
+        // ignoring all events in-between,...
+        val awtEventListener = { e: AWTEvent? ->
+            if (e?.source == this && e.id == MouseEvent.MOUSE_MOVED) {
+                updateScreenTimeDisplay()
+            }
+        }
+        // ...but only if this window is visible
+        this.addComponentListener(object : ComponentAdapter() {
+            override fun componentShown(e: ComponentEvent?) {
+                logger.fine("AWTEventListener added")
+                Toolkit.getDefaultToolkit().addAWTEventListener(awtEventListener, AWTEvent.MOUSE_MOTION_EVENT_MASK)
+            }
+            override fun componentHidden(e: ComponentEvent?) {
+                logger.fine("AWTEventListener removed")
+                Toolkit.getDefaultToolkit().removeAWTEventListener(awtEventListener)
+            }
+        })
+
+        // Every time the window focus is gained (which in practice means lost & gained),
+        // update the screen time information, so that the screen is always up-to-date
+        // when the user switches to it
+        this.addWindowFocusListener(object : WindowAdapter() {
+            override fun windowGainedFocus(e: WindowEvent?) =
+                updateScreenTimeDisplay()
+        })
+
         val padSize = screenTimeDisplay.font.size
 
         // Content Pane configuration
@@ -46,13 +96,14 @@ class InfoWindow : AnimatedJFrame("20ty") {
             border = EmptyBorder(padSize, padSize, padSize, padSize)
         }
 
-        // TODO Two labels:
-        // Screen Time and Time to the next 20ty Event
+        // TODO Display two labels:
+        //  Screen Time and time to the next 20ty Event
         val screenTimeLabel = JLabel("Screen Time")
 
         // The buttons panel
         val buttons = JPanel(BorderLayout()).apply {
             // The 'Close' Button
+            // TODO Change this to 'Stop 20ty', since a close button is incredibly redundant
             val closeButton = JButton("Close")
             closeButton.addActionListener {
                 this@InfoWindow.isVisible = false
@@ -83,17 +134,6 @@ class InfoWindow : AnimatedJFrame("20ty") {
 
         // Pack, so the dialog gets to its final size
         pack()
-    }
-
-    override fun animate(currentThread: Thread, sleepTime: Long) {
-        while (!currentThread.isInterrupted && this.isVisible) {
-            screenTimeDisplay.text = dateFormat.format(Date(Twenty.timeSinceStart))
-
-            sleepSafely(sleepTime) {
-                // Instant abort
-                return
-            }
-        }
     }
 
 }
