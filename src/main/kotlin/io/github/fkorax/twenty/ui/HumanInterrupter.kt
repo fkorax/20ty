@@ -31,15 +31,15 @@ import javax.swing.border.EmptyBorder
 import kotlin.math.cos
 
 class HumanInterrupter {
-    private val interruptWindow = InterruptWindow()
+    private val interruptWindow = InterruptWindow(::onRegularlyHidden)
 
     companion object {
 
         @JvmStatic
         fun testWindow(componentListener: ComponentListener) {
-            val testWindow = InterruptWindow()
-            testWindow.addComponentListener(componentListener)
-            testWindow.isVisible = true
+            val interrupter = HumanInterrupter()
+            interrupter.interruptWindow.addComponentListener(componentListener)
+            interrupter.interruptHuman()
         }
 
     }
@@ -54,22 +54,28 @@ class HumanInterrupter {
                 interruptWindow.setLocationRelativeTo(null)
                 interruptWindow.isVisible = true
                 // Put the window to the front, so the user sees it
+                // (but don't request focus!)
                 interruptWindow.toFront()
                 // Beep
-                // TODO Allow the user to turn this off, and later,
+                // TODO Allow the user to turn this off; and later,
                 //  to choose in a combo box between a System Beep, 20ty sounds, and a custom sound file
                 playAlertSound()
                 // TODO Allow notifications to be turned on/off
                 // trayIcon?.displayMessage("Look outside", "Look 20 m into the distance.", TrayIcon.MessageType.NONE)
-                // TODO Also beep on window hidden
-                playAlertSound()
             }
         }
     }
 
     private fun playAlertSound() = Toolkit.getDefaultToolkit().beep()
 
-    private class InterruptWindow : AnimatedJFrame("20ty") {
+    private fun onRegularlyHidden() {
+        // An alert sound is only played when the window
+        // is hidden regularly (i.e. not closed by the user)
+        playAlertSound()
+    }
+
+
+    private class InterruptWindow(private val onRegularlyHidden: () -> Unit) : AnimatedJFrame("20ty") {
         private val contentBox = JPanel()
         private val message = scaledJLabel("Look at least 20 m into the distance.", 2.0f)
         private val counter = scaledJLabel("0", 6.0f)
@@ -142,16 +148,12 @@ class HumanInterrupter {
                         return
                     }
 
-                    SwingUtilities.invokeLater {
-                        this.isVisible = false
-                    }
+                    hideRegularly()
                     return
                 }
                 currentThread.isInterrupted -> {
                     // Hide the window, abort
-                    SwingUtilities.invokeLater {
-                        this.isVisible = false
-                    }
+                    hideRegularly()
                     return
                 }
                 !this.isVisible -> {
@@ -162,6 +164,14 @@ class HumanInterrupter {
                 else -> animate(currentThread, sleepTime, startTime)
             }
 
+        }
+
+        private fun hideRegularly() {
+            SwingUtilities.invokeLater {
+                this.isVisible = false
+            }
+            // Invoke the onRegularlyHidden() method
+            onRegularlyHidden()
         }
 
     }
