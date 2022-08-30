@@ -20,54 +20,83 @@
 package io.github.fkorax.twenty
 
 import io.github.fkorax.twenty.ui.HumanInterrupter
+import io.github.fkorax.twenty.ui.InfoWindow
+import io.github.fkorax.twenty.ui.TraySupport
 import io.github.fkorax.twenty.util.enrichSystemProperties
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import java.util.concurrent.ScheduledThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import kotlin.system.exitProcess
 
-object Twenty {
-    // When the program is first started, save a timestamp so the total screen time can be calculated
-    @JvmField
-    val startTime: Long = System.currentTimeMillis()
+class Twenty {
+    companion object {
+        // When the program is first started, save a timestamp so the total screen time can be calculated
+        @JvmField
+        val startTime: Long = System.currentTimeMillis()
 
-    val timeSinceStart: Long get() = System.currentTimeMillis() - startTime
+        val timeSinceStart: Long get() = System.currentTimeMillis() - startTime
 
-    var developerMode: Boolean = false
-        private set
+        var developerMode: Boolean = false
+            private set
 
-    @JvmStatic
-    fun main(args: Array<String>) {
-        // Enrich the system properties first
-        enrichSystemProperties()
+        @JvmStatic
+        fun main(args: Array<String>) {
+            // Enrich the system properties first
+            enrichSystemProperties()
 
-        // Use the system's LookAndFeel
-        // TODO Maybe switch to an alternative LaF?
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
+            // Use the system's LookAndFeel
+            // TODO Maybe switch to an alternative LaF?
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
 
-        // TODO Convert args to flags (and detect unknown arguments!)
-        val runAppMain: Boolean = when {
-            "windowTest" in args -> {
-                windowTest()
-                false
+            // TODO Convert args to flags (and detect unknown arguments!)
+            val runAppMain: Boolean = when {
+                "windowTest" in args -> {
+                    windowTest()
+                    false
+                }
+                "-dev" in args -> {
+                    developerMode = true
+                    true
+                }
+                else -> true
             }
-            "-dev" in args -> {
-                developerMode = true
-                true
+            if (runAppMain) {
+                Twenty().main()
             }
-            else -> true
         }
-        if (runAppMain) {
-            TwentyApp().main()
+
+        private fun windowTest() {
+            HumanInterrupter.testWindow(object : ComponentAdapter() {
+                override fun componentHidden(e: ComponentEvent?) {
+                    exitProcess(0)
+                }
+            })
         }
+
     }
 
-    private fun windowTest() {
-        HumanInterrupter.testWindow(object : ComponentAdapter() {
-            override fun componentHidden(e: ComponentEvent?) {
-                exitProcess(0)
-            }
-        })
+    private val interrupter = HumanInterrupter()
+    private val traySupport = TraySupport.getTraySupport(::showInfoWindow, interrupter::interruptHuman)
+    private val infoWindow = InfoWindow()
+
+    fun main() {
+        // TODO Use the Schedulator (Schedule(d) Executor / Schedule + Regulator)
+        //  to do stuff like this
+        val executor = ScheduledThreadPoolExecutor(1)
+        // Schedule the interrupt task at a fixed delay
+        executor.scheduleWithFixedDelay(
+            interrupter::interruptHuman, 20, 20, TimeUnit.MINUTES)
+    }
+
+    private fun showInfoWindow() {
+        SwingUtilities.invokeLater {
+            // Show the InfoWindow, centered on screen
+            infoWindow.setLocationRelativeTo(null)
+            infoWindow.isVisible = true
+        }
     }
 
 }
