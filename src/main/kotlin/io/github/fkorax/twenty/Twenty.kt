@@ -57,7 +57,7 @@ class Twenty {
                     windowTest()
                     false
                 }
-                "-dev" in args -> {
+                "--dev" in args -> {
                     developerMode = true
                     true
                 }
@@ -78,9 +78,11 @@ class Twenty {
 
     }
 
+    private val title: String = if (developerMode) "20ty (Developer Mode)" else "20ty"
+
     private val interrupter = HumanInterrupter()
-    private val traySupport = TraySupport.getTraySupport(::showInfoWindow, interrupter::interruptHuman)
-    private val infoWindow = InfoWindow()
+    private val traySupport = TraySupport.getTraySupport(title, ::showInfoWindow, interrupter::interruptHuman)
+    private val infoWindow = InfoWindow(title)
 
     fun main() {
         // TODO Use the Schedulator (Schedule(d) Executor / Schedule + Regulator)

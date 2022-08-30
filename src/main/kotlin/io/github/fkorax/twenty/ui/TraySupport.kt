@@ -35,17 +35,17 @@ import kotlin.system.exitProcess
 
 sealed class TraySupport {
     companion object {
-        fun getTraySupport(twentyFun: () -> Unit, interruptFun: () -> Unit): TraySupport =
+        fun getTraySupport(title: String, twentyFun: () -> Unit, interruptFun: () -> Unit): TraySupport =
             // In practice, we have only one option right now:
             // CrossPlatform or Fallback
             if (SystemTray.isSupported())
-                CrossPlatform(twentyFun, interruptFun)
+                CrossPlatform(title, twentyFun, interruptFun)
             else
                 // TODO Use Fallback instead of throwing an exception
                 throw UnsupportedOperationException("Tray is unsupported.")
     }
 
-    private class CrossPlatform(twentyFun: () -> Unit, interruptFun: () -> Unit) : TraySupport() {
+    private class CrossPlatform(title: String, twentyFun: () -> Unit, interruptFun: () -> Unit) : TraySupport() {
         companion object {
             @JvmStatic
             private val trayIconResource: URL
@@ -58,13 +58,13 @@ sealed class TraySupport {
                     "ui/icons/icon-16.png")!!.also { println(System.getProperty("os.name") + " | " + System.getProperty("os.version")) }
         }
 
-        private val trayIcon = TrayIcon(Toolkit.getDefaultToolkit().getImage(trayIconResource), "20ty")
+        private val trayIcon = TrayIcon(Toolkit.getDefaultToolkit().getImage(trayIconResource), title)
 
         init {
             // Used multiple times:
             val twentyActionListener = ActionListener { twentyFun() }
 
-            trayIcon.popupMenu = popupMenu("20ty") {
+            trayIcon.popupMenu = popupMenu(title) {
                 item("20ty") {
                     font = (font ?: Font.decode(null))?.deriveFont(Font.BOLD) ?: Font(Font.SANS_SERIF, Font.BOLD, 14)
                     addActionListener(twentyActionListener)

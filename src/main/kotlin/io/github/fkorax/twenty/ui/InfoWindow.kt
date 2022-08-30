@@ -33,7 +33,7 @@ import java.util.logging.Logger
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 
-class InfoWindow : JFrame("20ty") {
+class InfoWindow(title: String) : JFrame(title) {
     // TODO Move the screen time display into a separate component
     private val screenTimeDisplay = scaledJLabel("<SCREEN TIME>", 2.0f)
     // Only hours and minutes are important, seconds need to be constantly updated and
