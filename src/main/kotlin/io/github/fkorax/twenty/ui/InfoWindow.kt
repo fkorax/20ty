@@ -23,6 +23,7 @@ import io.github.fkorax.twenty.Twenty
 import io.github.fkorax.twenty.ui.icons.SettingsIcon
 import io.github.fkorax.twenty.ui.util.scale
 import io.github.fkorax.twenty.util.forEach
+import io.github.fkorax.twenty.util.section
 import java.awt.AWTEvent
 import java.awt.BorderLayout
 import java.awt.Toolkit
@@ -100,33 +101,35 @@ class InfoWindow(title: String) : JFrame(title) {
         // For continuous updating of this information, we don't need an external Thread,
         // we can rely on the user's actions as impulse givers to do that.
 
-        // We react to mouse moved events to update
-        // the time information, but in relatively fixed time intervals,
-        // ignoring all events in-between,...
-        val awtEventListener = { e: AWTEvent? ->
-            if (e?.source == this && e.id == MouseEvent.MOUSE_MOVED) {
-                updateScreenTimeDisplay()
+        section("listeners") {
+            // We react to mouse moved events to update
+            // the time information, but in relatively fixed time intervals,
+            // ignoring all events in-between,...
+            val awtEventListener = { e: AWTEvent? ->
+                if (e?.source == this && e.id == MouseEvent.MOUSE_MOVED) {
+                    updateScreenTimeDisplay()
+                }
             }
-        }
-        // ...but only if this window is visible
-        this.addComponentListener(object : ComponentAdapter() {
-            override fun componentShown(e: ComponentEvent?) {
-                logger.fine("AWTEventListener added")
-                Toolkit.getDefaultToolkit().addAWTEventListener(awtEventListener, AWTEvent.MOUSE_MOTION_EVENT_MASK)
-            }
-            override fun componentHidden(e: ComponentEvent?) {
-                logger.fine("AWTEventListener removed")
-                Toolkit.getDefaultToolkit().removeAWTEventListener(awtEventListener)
-            }
-        })
+            // ...but only if this window is visible
+            this.addComponentListener(object : ComponentAdapter() {
+                override fun componentShown(e: ComponentEvent?) {
+                    logger.fine("AWTEventListener added")
+                    Toolkit.getDefaultToolkit().addAWTEventListener(awtEventListener, AWTEvent.MOUSE_MOTION_EVENT_MASK)
+                }
+                override fun componentHidden(e: ComponentEvent?) {
+                    logger.fine("AWTEventListener removed")
+                    Toolkit.getDefaultToolkit().removeAWTEventListener(awtEventListener)
+                }
+            })
 
-        // Every time the window focus is gained (which in practice means lost & gained),
-        // update the screen time information, so that the screen is always up-to-date
-        // when the user switches to it
-        this.addWindowFocusListener(object : WindowAdapter() {
-            override fun windowGainedFocus(e: WindowEvent?) =
-                updateScreenTimeDisplay()
-        })
+            // Every time the window focus is gained (which in practice means lost & gained),
+            // update the screen time information, so that the screen is always up-to-date
+            // when the user switches to it
+            this.addWindowFocusListener(object : WindowAdapter() {
+                override fun windowGainedFocus(e: WindowEvent?) =
+                    updateScreenTimeDisplay()
+            })
+        }
 
         val padSize = screenTimeDisplay.font.size
 
