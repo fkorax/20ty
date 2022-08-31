@@ -21,7 +21,7 @@ package io.github.fkorax.twenty.ui
 
 import io.github.fkorax.twenty.Twenty
 import io.github.fkorax.twenty.ui.icons.SettingsIcon
-import io.github.fkorax.twenty.ui.util.scaledJLabel
+import io.github.fkorax.twenty.ui.util.scale
 import io.github.fkorax.twenty.util.forEach
 import java.awt.AWTEvent
 import java.awt.BorderLayout
@@ -34,28 +34,67 @@ import javax.swing.*
 import javax.swing.border.EmptyBorder
 
 class InfoWindow(title: String) : JFrame(title) {
-    // TODO Move the screen time display into a separate component
-    private val screenTimeDisplay = scaledJLabel("<SCREEN TIME>", 2.0f)
-    // Only hours and minutes are important, seconds need to be constantly updated and
-    // are just visual noise, distracting the human user
-    private val dateFormat = SimpleDateFormat("HH:mm", locale).apply {
-        // Time Zone set to UTC since elapsed time is displayed
-        timeZone = TimeZone.getTimeZone("UTC")
+
+    private class ScreenTimeDisplay : JLabel() {
+        companion object {
+            const val MINUTES_SINGLE_THRESHOLD = 1000*60*10 // 10 minutes
+            const val MINUTES_DOUBLE_THRESHOLD = 1000*60*60    // 60 minutes = 1 hour
+            const val HOURS_SINGLE_THRESHOLD = 1000*60*60*10   // 10 hours
+
+            @JvmField
+            val TIME_ZONE_UTC: TimeZone = TimeZone.getTimeZone("UTC")
+        }
+        private enum class DateFormatType(val formatString: String) {
+            MINUTES_SINGLE ("m 'min'"),
+            MINUTES_DOUBLE ("mm 'min'"),
+            HOURS_SINGLE ("H 'h' mm 'min'"),
+            HOURS_DOUBLE ("HH 'h' mm 'min'")
+            ;
+
+            val dateFormat: SimpleDateFormat by lazy {
+                SimpleDateFormat(formatString).also {
+                    it.timeZone = TIME_ZONE_UTC
+                }
+            }
+
+        }
+
+        var millis: Long = 0L
+            set(value) {
+                // Ensure no negative numbers are being given
+                require(value >= 0) { "Milliseconds must not be negative." }
+                // Check which date format to use
+                val dateFormatType = when {
+                    value < MINUTES_SINGLE_THRESHOLD -> DateFormatType.MINUTES_SINGLE
+                    value < MINUTES_DOUBLE_THRESHOLD -> DateFormatType.MINUTES_DOUBLE
+                    value < HOURS_SINGLE_THRESHOLD -> DateFormatType.HOURS_SINGLE
+                    else -> DateFormatType.HOURS_DOUBLE
+                }
+
+                field = value
+                this.text = dateFormatType.dateFormat.format(millis)
+            }
+
+        init {
+            this.scale(2.0f)
+
+            this.millis = 0L
+        }
+
     }
 
     private val logger = Logger.getLogger(this::class.qualifiedName)
 
+    private val screenTimeDisplay = ScreenTimeDisplay()
+
     private var lastUpdateMillis = 0L
-    private fun updateScreenTimeDisplay(millis: Long) = synchronized(screenTimeDisplay) {
+    private fun updateScreenTimeDisplay() = synchronized(screenTimeDisplay) {
         if (System.currentTimeMillis() - lastUpdateMillis >= 1000) {
+            screenTimeDisplay.millis = Twenty.timeSinceStart
             logger.finest("Updated screen time display.")
-            screenTimeDisplay.text = dateFormat.format(millis)
             lastUpdateMillis = System.currentTimeMillis()
         }
     }
-
-    private fun updateScreenTimeDisplay() =
-        updateScreenTimeDisplay(Twenty.timeSinceStart)
 
     init {
         // For continuous updating of this information, we don't need an external Thread,
@@ -129,6 +168,7 @@ class InfoWindow(title: String) : JFrame(title) {
             this::add)
 
         // Window configuration
+        // In the future, make this window resizable
         this.isResizable = false
         this.defaultCloseOperation = WindowConstants.HIDE_ON_CLOSE
 
