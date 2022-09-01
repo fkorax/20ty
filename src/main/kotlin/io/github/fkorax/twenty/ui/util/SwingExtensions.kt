@@ -19,7 +19,17 @@
 
 package io.github.fkorax.twenty.ui.util
 
+import javax.swing.Action
 import javax.swing.JLabel
+import javax.swing.border.EmptyBorder
+
+fun emptyBorder(inset: Int) = EmptyBorder(inset, inset, inset, inset)
+
+operator fun Action.get(key: String): Any? =
+    this.getValue(key)
+
+operator fun Action.set(key: String, value: Any?) =
+    this.putValue(key, value)
 
 fun scaledJLabel(text: String, scaleFactor: Float) = JLabel(text).apply {
     this.scale(scaleFactor)
