@@ -27,6 +27,7 @@ import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import java.util.logging.Logger
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import kotlin.system.exitProcess
@@ -78,6 +79,8 @@ class Twenty {
 
     }
 
+    private val logger: Logger = Logger.getLogger(this::class.qualifiedName)
+
     private val title: String = if (developerMode) "20ty (Developer Mode)" else "20ty"
 
     private val interrupter = HumanInterrupter()
@@ -91,6 +94,13 @@ class Twenty {
         // Schedule the interrupt task at a fixed delay
         executor.scheduleWithFixedDelay(
             interrupter::interruptHuman, 20, 20, TimeUnit.MINUTES)
+    }
+
+    // TODO Expose functions like these through Actions sorted by groups,
+    //  which can then be directly incorporated into the TraySupport
+    private fun stop() {
+        logger.info("Process stopped by user.")
+        exitProcess(0)
     }
 
     private fun showInfoWindow() {
