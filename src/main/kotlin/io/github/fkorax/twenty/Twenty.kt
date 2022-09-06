@@ -129,10 +129,15 @@ class Twenty {
 
     private val title: String = if (developerMode) "20ty (Developer Mode)" else "20ty"
 
+    private val resources: Resources = Resources(
+        "/${this::class.java.packageName.replace('.', '/')}/res/",
+        "icons/"
+    )
+
     private val schedulator = Schedulator()
     private val interrupter = HumanInterrupter()
-    private val traySupport = TraySupport.getTraySupport(title, ::showInfoWindow, interrupter::interruptHuman)
-    private val infoWindow = InfoWindow(title)
+    private val traySupport = TraySupport.getTraySupport(resources, title, ::showInfoWindow, interrupter::interruptHuman)
+    private val infoWindow = InfoWindow(resources, title)
 
     fun main() {
         schedulator.schedule(interrupter::interruptHuman, 20)

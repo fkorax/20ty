@@ -27,38 +27,35 @@ import io.github.fkorax.twenty.ui.util.popupMenu
 import io.github.fkorax.twenty.ui.util.separator
 import java.awt.Font
 import java.awt.SystemTray
-import java.awt.Toolkit
 import java.awt.TrayIcon
 import java.awt.event.ActionListener
-import java.net.URL
 import kotlin.system.exitProcess
 
-sealed class TraySupport {
+sealed class TraySupport(protected val resources: Resources) {
     companion object {
-        fun getTraySupport(title: String, twentyFun: () -> Unit, interruptFun: () -> Unit): TraySupport =
+        fun getTraySupport(res: Resources, title: String, twentyFun: () -> Unit, interruptFun: () -> Unit): TraySupport =
             // In practice, we have only one option right now:
             // CrossPlatform or Fallback
             if (SystemTray.isSupported())
-                CrossPlatform(title, twentyFun, interruptFun)
+                CrossPlatform(res, title, twentyFun, interruptFun)
             else
                 // TODO Use Fallback instead of throwing an exception
                 throw UnsupportedOperationException("Tray is unsupported.")
     }
 
-    private class CrossPlatform(title: String, twentyFun: () -> Unit, interruptFun: () -> Unit) : TraySupport() {
+    private class CrossPlatform(res: Resources, title: String, twentyFun: () -> Unit, interruptFun: () -> Unit) : TraySupport(res) {
         companion object {
             @JvmStatic
-            private val trayIconResource: URL
-                get() = Resources.get(
+            private val trayIconName: String get() =
                 // Use a smaller Ubuntu notification tray compatible icon on Ubuntu 20.0 and later
                 if (System.getProperty("lsb.description").startsWith("Ubuntu") &&
                     (System.getProperty("lsb.release").substringBefore('.').toIntOrNull() ?: 0) >= 20)
-                    "ui/icons/icon-8.png"
+                    "icon-8.png"
                 else
-                    "ui/icons/icon-16.png")!!.also { println(System.getProperty("os.name") + " | " + System.getProperty("os.version")) }
+                    "icon-16.png".also { println(System.getProperty("os.name") + " | " + System.getProperty("os.version")) }
         }
 
-        private val trayIcon = TrayIcon(Toolkit.getDefaultToolkit().getImage(trayIconResource), title)
+        private val trayIcon = TrayIcon(resources.getIcon(trayIconName).image, title)
 
         init {
             // Used multiple times:

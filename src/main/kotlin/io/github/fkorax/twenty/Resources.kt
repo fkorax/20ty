@@ -21,11 +21,22 @@ package io.github.fkorax.twenty
 
 import java.io.InputStream
 import java.net.URL
+import javax.swing.ImageIcon
 
-object Resources {
+class Resources(root: String, iconRoot: String) {
+    companion object {
+        @JvmStatic
+        private fun formatRoot(root: String): String =
+            root.trim().let { if (!it.endsWith('/')) "$it/" else it }
+    }
 
-    fun get(name: String): URL? = this.javaClass.getResource(name)
+    private val root: String = formatRoot(root)
+    private val iconRoot: String = formatRoot(iconRoot)
 
-    fun getAsStream(name: String): InputStream? = this.javaClass.getResourceAsStream(name)
+    fun getIcon(name: String) = ImageIcon(getFile(iconRoot + name))
+
+    fun getFile(name: String): URL? = this.javaClass.getResource(root + name)
+
+    fun getFileAsStream(name: String): InputStream? = this.javaClass.getResourceAsStream(root + name)
 
 }
