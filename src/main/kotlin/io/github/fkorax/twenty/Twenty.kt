@@ -26,8 +26,6 @@ import io.github.fkorax.twenty.util.enrichSystemProperties
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.time.LocalTime
-import java.util.concurrent.ScheduledThreadPoolExecutor
-import java.util.concurrent.TimeUnit
 import java.util.logging.Logger
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
@@ -104,17 +102,13 @@ class Twenty {
 
     private val title: String = if (developerMode) "20ty (Developer Mode)" else "20ty"
 
+    private val schedulator = Schedulator()
     private val interrupter = HumanInterrupter()
     private val traySupport = TraySupport.getTraySupport(title, ::showInfoWindow, interrupter::interruptHuman)
     private val infoWindow = InfoWindow(title)
 
     fun main() {
-        // TODO Use the Schedulator (Schedule(d) Executor / Schedule + Regulator)
-        //  to do stuff like this
-        val executor = ScheduledThreadPoolExecutor(1)
-        // Schedule the interrupt task at a fixed delay
-        executor.scheduleWithFixedDelay(
-            interrupter::interruptHuman, 20, 20, TimeUnit.MINUTES)
+        schedulator.schedule(interrupter::interruptHuman, 20)
     }
 
     // TODO Expose functions like these through Actions sorted by groups,
