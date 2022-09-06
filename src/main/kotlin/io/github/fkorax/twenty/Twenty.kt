@@ -25,12 +25,15 @@ import io.github.fkorax.twenty.ui.TraySupport
 import io.github.fkorax.twenty.util.enrichSystemProperties
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import java.time.LocalTime
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.logging.Logger
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import kotlin.system.exitProcess
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 class Twenty {
     companion object {
@@ -77,7 +80,25 @@ class Twenty {
             })
         }
 
+        @JvmStatic
+        private val DEFAULT_SETTINGS = Settings(
+            breakDuration = Setting.BreakDuration(Setting.BreakDuration.MINIMUM_SECONDS.seconds),
+            sessionDuration = Setting.SessionDuration(Setting.SessionDuration.MAXIMUM_MINUTES.minutes),
+            nightLimitTime = Setting.NightLimitTime(LocalTime.of(21, 0)),
+            nightLimitActivity = Setting.NightLimitActivity(emptySet()),    // Night limit turned off by default
+            playAlertSound = Setting.PlayAlertSound(true),
+            lookAndFeel = Setting.LookAndFeel.SYSTEM
+        )
     }
+
+    data class Settings(
+        val breakDuration: Setting.BreakDuration? = null,
+        val sessionDuration: Setting.SessionDuration? = null,
+        val nightLimitTime: Setting.NightLimitTime? = null,
+        val nightLimitActivity: Setting.NightLimitActivity? = null,
+        val playAlertSound: Setting.PlayAlertSound? = null,
+        val lookAndFeel: Setting.LookAndFeel? = null
+    )
 
     private val logger: Logger = Logger.getLogger(this::class.qualifiedName)
 
