@@ -78,24 +78,51 @@ class Twenty {
             })
         }
 
+        /**
+         * Twenty relies on these fallback Settings if some parts of
+         * the user Settings cannot be applied. In this case, Settings
+         * are explicitly 'overridden'. These Settings are not the defaults,
+         * and Twenty replaces inapplicable Settings individually (so if one
+         * Setting cannot be applied, only that Setting will be replaced with
+         * its fallback setting).
+         */
         @JvmStatic
-        private val DEFAULT_SETTINGS = Settings(
+        private val FALLBACK_SETTINGS = Settings(
             breakDuration = Setting.BreakDuration(Setting.BreakDuration.MINIMUM_SECONDS.seconds),
             sessionDuration = Setting.SessionDuration(Setting.SessionDuration.MAXIMUM_MINUTES.minutes),
             nightLimitTime = Setting.NightLimitTime(LocalTime.of(21, 0)),
             nightLimitActivity = Setting.NightLimitActivity(emptySet()),    // Night limit turned off by default
-            playAlertSound = Setting.PlayAlertSound(true),
+            playAlertSound = Setting.PlayAlertSound(false),
             lookAndFeel = Setting.LookAndFeel.SYSTEM
         )
     }
 
-    data class Settings(
+    /**
+     * This data class has nullable 'slots' for each type of [Setting],
+     * where an empty field (`null`) means that a Setting should not be changed.
+     */
+    data class SettingsChange(
         val breakDuration: Setting.BreakDuration? = null,
         val sessionDuration: Setting.SessionDuration? = null,
         val nightLimitTime: Setting.NightLimitTime? = null,
         val nightLimitActivity: Setting.NightLimitActivity? = null,
         val playAlertSound: Setting.PlayAlertSound? = null,
         val lookAndFeel: Setting.LookAndFeel? = null
+    )
+
+    /**
+     * The actual settings are guaranteed to be not null.
+     * They represent the internal state of the application,
+     * and a change in settings means a change in the state of
+     * the application (the Twenty class is kind of a state machine).
+     */
+    private data class Settings(
+        val breakDuration: Setting.BreakDuration,
+        val sessionDuration: Setting.SessionDuration,
+        val nightLimitTime: Setting.NightLimitTime,
+        val nightLimitActivity: Setting.NightLimitActivity,
+        val playAlertSound: Setting.PlayAlertSound,
+        val lookAndFeel: Setting.LookAndFeel
     )
 
     private val logger: Logger = Logger.getLogger(this::class.qualifiedName)
