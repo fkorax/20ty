@@ -21,6 +21,8 @@ package io.github.fkorax.twenty.ui
 
 import io.github.fkorax.twenty.Twenty
 import io.github.fkorax.twenty.ui.icons.SettingsIcon
+import io.github.fkorax.twenty.ui.icons.StopIcon
+import io.github.fkorax.twenty.ui.util.emptyBorder
 import io.github.fkorax.twenty.ui.util.scale
 import io.github.fkorax.twenty.util.forEach
 import io.github.fkorax.twenty.util.section
@@ -32,7 +34,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.logging.Logger
 import javax.swing.*
-import javax.swing.border.EmptyBorder
+import kotlin.system.exitProcess
 
 class InfoWindow(title: String) : JFrame(title) {
 
@@ -134,49 +136,55 @@ class InfoWindow(title: String) : JFrame(title) {
         val padSize = screenTimeDisplay.font.size
 
         // Content Pane configuration
-        this.contentPane = Box.createVerticalBox().apply {
-            border = EmptyBorder(padSize, padSize, padSize, padSize)
+        val contentPane = this.contentPane
+        contentPane.layout = BorderLayout()
+        if (contentPane is JComponent) {
+            contentPane.border = emptyBorder(padSize / 2)
         }
 
-        // TODO Display two labels:
-        //  Screen Time and time to the next 20ty Event
-        val screenTimeLabel = JLabel("Screen Time")
-
-        // The buttons panel
-        val buttons = JPanel(BorderLayout()).apply {
-            // The 'Close' Button
-            // TODO Change this to 'Stop 20ty', since a close button is incredibly redundant
-            val closeButton = JButton("Close")
-            closeButton.addActionListener {
-                this@InfoWindow.isVisible = false
+        section("screenTimePanel") {
+            val screenTimePanel = Box.createVerticalBox()
+            screenTimePanel.border = BorderFactory.createCompoundBorder(
+                // A small hack to create a platform-appropriate border
+                BorderFactory.createTitledBorder(""), emptyBorder(padSize),
+            )
+            // TODO Display two labels:
+            //  Screen Time and time to the next 20ty Event
+            val screenTimeLabel = JLabel("Screen Time")
+            // Center both components horizontally
+            forEach(screenTimeLabel, screenTimeDisplay) {
+                it.alignmentX = CENTER_ALIGNMENT
             }
-            add(closeButton, BorderLayout.WEST)
-
-            // The 'Settings' Button
-            val settingsButton = JButton("Settings", SettingsIcon())
-            add(settingsButton, BorderLayout.EAST)
+            forEach(screenTimeLabel, screenTimeDisplay, screenTimePanel::add)
+            add(screenTimePanel, BorderLayout.CENTER)
         }
 
-        // Set alignments
-        forEach(screenTimeLabel, screenTimeDisplay, buttons) {
-            it.alignmentX = CENTER_ALIGNMENT
-        }
+        section("bottomPanel") {
+            // The buttons panel
+            val buttons = Box.createHorizontalBox().apply {
+                border = BorderFactory.createEmptyBorder(padSize / 2, 0, 0, 0)
 
-        // Add components
-        forEach(
-            screenTimeLabel,
-            screenTimeDisplay,
-            Box.createVerticalStrut(padSize),
-            buttons,
-            this::add)
+                // The 'Stop' Button
+                val stopButton = JButton("Stop", StopIcon())
+                stopButton.addActionListener {
+                    exitProcess(0)
+                }
+
+                // The 'Settings' Button
+                val settingsButton = JButton("Settings", SettingsIcon())
+
+                forEach(stopButton, Box.createHorizontalGlue(), settingsButton, this::add)
+            }
+            add(buttons, BorderLayout.SOUTH)
+        }
 
         // Window configuration
-        // In the future, make this window resizable
-        this.isResizable = false
         this.defaultCloseOperation = WindowConstants.HIDE_ON_CLOSE
 
         // Pack, so the dialog gets to its final size
         pack()
+        // Set the minimum size to the size after packing
+        this.minimumSize = size
     }
 
 }
