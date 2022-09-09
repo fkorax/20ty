@@ -171,6 +171,12 @@ class InfoWindow(title: String) : JFrame(title) {
 
                 // The 'Settings' Button
                 val settingsButton = JButton("Settings", Twenty.resources.getIcon("settings-16.png"))
+                settingsButton.addActionListener {
+                    SettingsDialog(this@InfoWindow).apply {
+                        setLocationRelativeTo(null)
+                        isVisible = true
+                    }
+                }
 
                 forEach(stopButton, Box.createHorizontalGlue(), settingsButton, this::add)
             }

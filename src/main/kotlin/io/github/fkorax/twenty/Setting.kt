@@ -30,6 +30,7 @@ sealed interface Setting<T> {
     value class BreakDuration(override val value: Duration) : Setting<Duration> {
         companion object {
             const val MINIMUM_SECONDS = 20
+            // TODO Add a maximum
         }
         init {
             require(value.inWholeSeconds >= MINIMUM_SECONDS)
@@ -40,6 +41,7 @@ sealed interface Setting<T> {
     value class SessionDuration(override val value: Duration) : Setting<Duration> {
         companion object {
             const val MAXIMUM_MINUTES = 20
+            // TODO Add a minimum
         }
         init {
             require(value.inWholeMinutes <= MAXIMUM_MINUTES)
