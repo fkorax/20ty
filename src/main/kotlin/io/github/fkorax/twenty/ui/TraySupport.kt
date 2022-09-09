@@ -19,7 +19,6 @@
 
 package io.github.fkorax.twenty.ui
 
-import io.github.fkorax.twenty.Resources
 import io.github.fkorax.twenty.Twenty
 import io.github.fkorax.twenty.ui.util.item
 import io.github.fkorax.twenty.ui.util.menu
@@ -31,19 +30,19 @@ import java.awt.TrayIcon
 import java.awt.event.ActionListener
 import kotlin.system.exitProcess
 
-sealed class TraySupport(protected val resources: Resources) {
+sealed class TraySupport() {
     companion object {
-        fun getTraySupport(res: Resources, title: String, twentyFun: () -> Unit, interruptFun: () -> Unit): TraySupport =
+        fun getTraySupport(title: String, twentyFun: () -> Unit, interruptFun: () -> Unit): TraySupport =
             // In practice, we have only one option right now:
             // CrossPlatform or Fallback
             if (SystemTray.isSupported())
-                CrossPlatform(res, title, twentyFun, interruptFun)
+                CrossPlatform(title, twentyFun, interruptFun)
             else
                 // TODO Use Fallback instead of throwing an exception
                 throw UnsupportedOperationException("Tray is unsupported.")
     }
 
-    private class CrossPlatform(res: Resources, title: String, twentyFun: () -> Unit, interruptFun: () -> Unit) : TraySupport(res) {
+    private class CrossPlatform(title: String, twentyFun: () -> Unit, interruptFun: () -> Unit) : TraySupport() {
         companion object {
             @JvmStatic
             private val trayIconName: String get() =
@@ -55,7 +54,7 @@ sealed class TraySupport(protected val resources: Resources) {
                     "icon-16.png".also { println(System.getProperty("os.name") + " | " + System.getProperty("os.version")) }
         }
 
-        private val trayIcon = TrayIcon(resources.getIcon(trayIconName).image, title)
+        private val trayIcon = TrayIcon(Twenty.resources.getIcon(trayIconName).image, title)
 
         init {
             // Used multiple times:
@@ -63,7 +62,9 @@ sealed class TraySupport(protected val resources: Resources) {
 
             trayIcon.popupMenu = popupMenu(title) {
                 item("20ty") {
-                    font = (font ?: Font.decode(null))?.deriveFont(Font.BOLD) ?: Font(Font.SANS_SERIF, Font.BOLD, 14)
+                    // Try to derive a bold version of the current Font,
+                    // otherwise use a bold standard Dialog Font
+                    font = (font ?: Font.decode(null))?.deriveFont(Font.BOLD) ?: Font(Font.DIALOG, Font.BOLD, 14)
                     addActionListener(twentyActionListener)
                 }
                 separator()
