@@ -27,11 +27,11 @@ import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.time.LocalTime
 import java.util.logging.Logger
+import java.util.prefs.Preferences
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 class Twenty {
     companion object {
@@ -55,9 +55,8 @@ class Twenty {
             // Enrich the system properties first
             enrichSystemProperties()
 
-            // Use the system's LookAndFeel
-            // TODO Maybe switch to an alternative LaF?
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
+            // Use the cross-platform LookAndFeel by default
+            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
 
             // TODO Convert args to flags (and detect unknown arguments!)
             val runAppMain: Boolean = when {
@@ -92,46 +91,41 @@ class Twenty {
          * Setting cannot be applied, only that Setting will be replaced with
          * its fallback setting).
          */
-        @JvmStatic
         private val FALLBACK_SETTINGS = Settings(
-            breakDuration = Setting.BreakDuration(Setting.BreakDuration.MINIMUM_SECONDS.seconds),
-            sessionDuration = Setting.SessionDuration(Setting.SessionDuration.MAXIMUM_MINUTES.minutes),
+            breakDuration = Setting.BreakDuration.MIN_VALUE,
+            sessionDuration = Setting.SessionDuration.MAX_VALUE,
             nightLimitTime = Setting.NightLimitTime(LocalTime.of(21, 0)),
-            nightLimitActivity = Setting.NightLimitActivity(emptySet()),    // Night limit turned off by default
+            nightLimitActive = Setting.NightLimitActive(emptySet()),    // Night limit turned off by default
+            nightSessionDuration = Setting.SessionDuration(5.minutes),
             playAlertSound = Setting.PlayAlertSound(false),
-            lookAndFeel = Setting.LookAndFeel.SYSTEM
+            lookAndFeel = Setting.LookAndFeel.CROSS_PLATFORM
+            // The default cross-platform look and feel should always work...
+        )
+
+        private val DEFAULT_SETTINGS_CHANGE = Settings(
+            breakDuration = Setting.BreakDuration.MIN_VALUE,
+            sessionDuration = Setting.SessionDuration.MAX_VALUE,
+            nightLimitTime = Setting.NightLimitTime(LocalTime.of(21, 0)),
+            nightLimitActive = Setting.NightLimitActive(emptySet()),
+            nightSessionDuration = Setting.SessionDuration(5.minutes),
+            playAlertSound = Setting.PlayAlertSound(false),
+            lookAndFeel = Setting.LookAndFeel.NIMBUS
         )
     }
 
-    /**
-     * This data class has nullable 'slots' for each type of [Setting],
-     * where an empty field (`null`) means that a Setting should not be changed.
-     */
-    data class SettingsChange(
-        val breakDuration: Setting.BreakDuration? = null,
-        val sessionDuration: Setting.SessionDuration? = null,
-        val nightLimitTime: Setting.NightLimitTime? = null,
-        val nightLimitActivity: Setting.NightLimitActivity? = null,
-        val playAlertSound: Setting.PlayAlertSound? = null,
-        val lookAndFeel: Setting.LookAndFeel? = null
-    )
-
-    /**
-     * The actual settings are guaranteed to be not null.
-     * They represent the internal state of the application,
-     * and a change in settings means a change in the state of
-     * the application (the Twenty class is kind of a state machine).
-     */
-    private data class Settings(
-        val breakDuration: Setting.BreakDuration,
-        val sessionDuration: Setting.SessionDuration,
-        val nightLimitTime: Setting.NightLimitTime,
-        val nightLimitActivity: Setting.NightLimitActivity,
-        val playAlertSound: Setting.PlayAlertSound,
-        val lookAndFeel: Setting.LookAndFeel
-    )
-
     private val logger: Logger = Logger.getLogger(this::class.qualifiedName)
+
+    /**
+     * The Preferences object to retrieve and store the [settings] in a user node.
+     */
+    private val preferences: Preferences = Preferences.userNodeForPackage(this::class.java)
+
+    /**
+     * The program settings. Initialized to [FALLBACK_SETTINGS], but will later be changed
+     * with the loaded settings or [DEFAULT_SETTINGS_CHANGE], if no settings could
+     * be loaded.
+     */
+    private val settings: Settings = FALLBACK_SETTINGS
 
     private val title: String = if (developerMode) "20ty (Developer Mode)" else "20ty"
 
@@ -139,6 +133,22 @@ class Twenty {
     private val interrupter = HumanInterrupter()
     private val traySupport = TraySupport.getTraySupport(title, ::showInfoWindow, interrupter::interruptHuman)
     private val infoWindow = InfoWindow(title)
+
+    init {
+        // Try and load the stored Settings
+        val storedSettingsChangeResult = Settings.loadFrom(preferences)
+        // Apply the stored settings, or apply the default settings,
+        // which will also cause them to be stored
+        applySettings(storedSettingsChangeResult.getOrDefault(DEFAULT_SETTINGS_CHANGE))
+    }
+
+    fun applySettings(change: Settings) {
+        // TODO After every settings change, the new settings should
+        //  be stored in preferences
+        //  (why are they stored every time? → Sometimes, a fallback could have
+        //  been applied, and we want the user to recognize that)
+        TODO("Implement")
+    }
 
     fun main() {
         schedulator.schedule(interrupter::interruptHuman, 20)

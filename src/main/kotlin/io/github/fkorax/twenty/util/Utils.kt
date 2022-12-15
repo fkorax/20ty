@@ -19,6 +19,8 @@
 
 package io.github.fkorax.twenty.util
 
+import java.util.prefs.Preferences
+
 inline fun <T> forEach(a: T, b: T, block: (T) -> Unit) {
     block(a)
     block(b)
@@ -44,4 +46,15 @@ inline fun sleepSafely(millis: Long, onInterrupt: (e: InterruptedException) -> U
     catch (e: InterruptedException) {
         onInterrupt(e)
     }
+}
+
+fun Preferences.getOrNull(key: String): String? = this.get(key, null)
+
+inline fun <K, V, R, S> Map<K, V>.mapToHashMap(transform: (Map.Entry<K, V>) -> Pair<R, S>): Map<R, S> {
+    val results = HashMap<R, S>(this.size)
+    this.forEach { entry ->
+        val (newKey, newValue) = transform(entry)
+        results[newKey] = newValue
+    }
+    return results
 }
