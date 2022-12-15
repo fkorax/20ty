@@ -20,7 +20,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm") version "1.7.20"
     application
     idea
 }
@@ -34,6 +34,7 @@ repositories {
 
 dependencies {
     implementation("com.formdev:flatlaf:2.4")
+    implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
 }
 
