@@ -94,10 +94,10 @@ class Twenty {
         private val FALLBACK_SETTINGS = Settings(
             breakDuration = Setting.BreakDuration.MIN_VALUE,
             sessionDuration = Setting.SessionDuration.MAX_VALUE,
-            nightLimitTime = Setting.NightLimitTime(LocalTime.of(21, 0)),
-            nightLimitActive = Setting.NightLimitActive(emptySet()),    // Night limit turned off by default
+            nightLimitTime = Setting.LocalHmTime(LocalTime.of(21, 0)),
+            nightLimitActive = Setting.ActiveOn(emptySet()),    // Night limit turned off by default
             nightSessionDuration = Setting.SessionDuration(5.minutes),
-            playAlertSound = Setting.PlayAlertSound(false),
+            playAlertSound = Setting.Toggle(false),
             lookAndFeel = Setting.LookAndFeel.CROSS_PLATFORM
             // The default cross-platform look and feel should always work...
         )
@@ -105,10 +105,10 @@ class Twenty {
         private val DEFAULT_SETTINGS_CHANGE = Settings(
             breakDuration = Setting.BreakDuration.MIN_VALUE,
             sessionDuration = Setting.SessionDuration.MAX_VALUE,
-            nightLimitTime = Setting.NightLimitTime(LocalTime.of(21, 0)),
-            nightLimitActive = Setting.NightLimitActive(emptySet()),
+            nightLimitTime = Setting.LocalHmTime(LocalTime.of(21, 0)),
+            nightLimitActive = Setting.ActiveOn(emptySet()),
             nightSessionDuration = Setting.SessionDuration(5.minutes),
-            playAlertSound = Setting.PlayAlertSound(false),
+            playAlertSound = Setting.Toggle(false),
             lookAndFeel = Setting.LookAndFeel.NIMBUS
         )
     }

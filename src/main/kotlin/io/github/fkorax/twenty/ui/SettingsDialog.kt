@@ -34,9 +34,9 @@ class SettingsDialog(owner: JFrame) : JDialog(owner, "Settings", true) {
         // Add all the settings widgets
         forEach(
             JLabel("Night Limit Time"),
-            SettingWidget.NightLimitTime(),
+            SettingWidget.LocalHmTime(),
             JLabel("Play Alert Sound"),
-            SettingWidget.PlayAlertSound(),
+            SettingWidget.Toggle(),
             this::add
         )
 

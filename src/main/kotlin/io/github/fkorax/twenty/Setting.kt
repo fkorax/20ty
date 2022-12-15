@@ -92,23 +92,28 @@ sealed interface Setting<T> {
 
     }
 
-    // TODO Make more abstract and rename to LocalHmTime
     @JvmInline
-    value class NightLimitTime(override val value: LocalTime) : Setting<LocalTime> {
-        companion object : SCompanion<NightLimitTime> {
+    value class LocalHmTime(override val value: LocalTime) : Setting<LocalTime> {
+        companion object : SCompanion<LocalHmTime> {
             @JvmStatic
-            override fun fromString(value: String): NightLimitTime =
-                NightLimitTime(LocalTime.parse(value))
+            override fun fromString(value: String): LocalHmTime =
+                LocalHmTime(LocalTime.parse(value))
+        }
+
+        init {
+            // Ensure that the LocalTime value conforms to
+            // the HH:mm format (no seconds, no nanoseconds)
+            require(value.second == 0) { "Non-zero second value in given LocalTime" }
+            require(value.nano == 0) { "Non-zero nano value in given LocalTime" }
         }
 
         override fun toString(): String = value.toString()
     }
 
-    // Make more abstract and rename to ActiveOn
     @JvmInline
-    value class NightLimitActive(override val value: Set<DayOfWeek>) : Setting<Set<DayOfWeek>> {
+    value class ActiveOn(override val value: Set<DayOfWeek>) : Setting<Set<DayOfWeek>> {
 
-        companion object : SCompanion<NightLimitActive> {
+        companion object : SCompanion<ActiveOn> {
             // TODO Test (with black box, that is, the fromString function itself)
             // WDL = Week Day Literal
             private const val WDL = "(MON|TUES|WEDNES|THURS|FRI|SATUR|SUN)DAY"
@@ -119,7 +124,7 @@ sealed interface Setting<T> {
             )
 
             @JvmStatic
-            override fun fromString(value: String) = NightLimitActive(when {
+            override fun fromString(value: String) = ActiveOn(when {
                 value == "{}" -> emptySet()
                 value.matches(SINGLE_REGEX) -> setOf(DayOfWeek.valueOf(value.slice(1 until value.length)))
                 value.matches(MULTI_REGEX) -> {
@@ -149,14 +154,13 @@ sealed interface Setting<T> {
 
     }
 
-    // TODO Make more abstract/general and rename to Toggle
     @JvmInline
-    value class PlayAlertSound(override val value: Boolean) : Setting<Boolean> {
-        companion object : SCompanion<PlayAlertSound> {
+    value class Toggle(override val value: Boolean) : Setting<Boolean> {
+        companion object : SCompanion<Toggle> {
             @JvmStatic
-            override fun fromString(value: String): PlayAlertSound = when (value) {
-                "true" -> PlayAlertSound(true)
-                "false" -> PlayAlertSound(false)
+            override fun fromString(value: String): Toggle = when (value) {
+                "true" -> Toggle(true)
+                "false" -> Toggle(false)
                 else -> throw IllegalArgumentException("String value has to be either \"true\" or \"false\": $value")
             }
         }

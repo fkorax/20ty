@@ -17,13 +17,13 @@ class Settings(
     @property:SettingProperty
     val sessionDuration: Setting.SessionDuration,
     @property:SettingProperty
-    val nightLimitTime: Setting.NightLimitTime,
+    val nightLimitTime: Setting.LocalHmTime,
     @property:SettingProperty
-    val nightLimitActive: Setting.NightLimitActive,
+    val nightLimitActive: Setting.ActiveOn,
     @property:SettingProperty
     val nightSessionDuration: Setting.SessionDuration,
     @property:SettingProperty
-    val playAlertSound: Setting.PlayAlertSound,
+    val playAlertSound: Setting.Toggle,
     @property:SettingProperty
     val lookAndFeel: Setting.LookAndFeel
 ) {

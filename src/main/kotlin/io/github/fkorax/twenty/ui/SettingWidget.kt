@@ -27,7 +27,7 @@ import javax.swing.*
 // of the Setting they control, but are responsible for nothing else.
 sealed interface SettingWidget<T : Setting<*>> {
 
-    class NightLimitTime : SettingWidget<Setting.NightLimitTime>, JPanel() {
+    class LocalHmTime : SettingWidget<Setting.LocalHmTime>, JPanel() {
 
         init {
             // A custom component with two spinner fields,
@@ -42,6 +42,6 @@ sealed interface SettingWidget<T : Setting<*>> {
 
     }
 
-    class PlayAlertSound : SettingWidget<Setting.PlayAlertSound>, JCheckBox()
+    class Toggle : SettingWidget<Setting.Toggle>, JCheckBox()
 
 }
