@@ -147,7 +147,7 @@ class Twenty {
         //  be stored in preferences
         //  (why are they stored every time? → Sometimes, a fallback could have
         //  been applied, and we want the user to recognize that)
-        TODO("Implement")
+        println("TODO: Apply given settings.")
     }
 
     fun main() {
