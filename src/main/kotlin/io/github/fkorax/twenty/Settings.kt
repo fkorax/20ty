@@ -12,20 +12,13 @@ import kotlin.reflect.full.memberProperties
 private typealias SettingKProp1 = KProperty1<Settings, Setting<*>>
 
 class Settings(
-    @property:SettingProperty
-    val breakDuration: Setting.BreakDuration,
-    @property:SettingProperty
-    val sessionDuration: Setting.SessionDuration,
-    @property:SettingProperty
-    val nightLimitTime: Setting.LocalHmTime,
-    @property:SettingProperty
-    val nightLimitActive: Setting.ActiveOn,
-    @property:SettingProperty
-    val nightSessionDuration: Setting.SessionDuration,
-    @property:SettingProperty
-    val playAlertSound: Setting.Toggle,
-    @property:SettingProperty
-    val lookAndFeel: Setting.LookAndFeel
+    @property:Entry val breakDuration: Setting.BreakDuration,
+    @property:Entry val sessionDuration: Setting.SessionDuration,
+    @property:Entry val nightLimitTime: Setting.LocalHmTime,
+    @property:Entry val nightLimitActive: Setting.ActiveOn,
+    @property:Entry val nightSessionDuration: Setting.SessionDuration,
+    @property:Entry val playAlertSound: Setting.Toggle,
+    @property:Entry val lookAndFeel: Setting.LookAndFeel
 ) {
 
     private constructor(values: Map<SettingKProp1, Setting<*>?>) : this(
@@ -40,7 +33,7 @@ class Settings(
 
     @Retention(AnnotationRetention.RUNTIME)
     @Target(AnnotationTarget.PROPERTY)
-    private annotation class SettingProperty()
+    private annotation class Entry
 
     /**
      * The companion object includes a number of static lookup tables,
@@ -53,7 +46,7 @@ class Settings(
     companion object {
         /**
          * A static lookup table of all [KProperty1] instances of `Settings` properties
-         * annotated with `@`[SettingProperty], associated by their `String` [name][KProperty1.name].
+         * marked with `@`[Entry], associated by their `String` [name][KProperty1.name].
          *
          * Structure of a lookup table entry:
          * ```
@@ -64,30 +57,30 @@ class Settings(
          * ```
          */
         @Suppress("UNCHECKED_CAST")
-        private val SETTING_PROPERTIES: Map<String, SettingKProp1> =
+        private val ENTRY_PROPERTIES: Map<String, SettingKProp1> =
             Settings::class.memberProperties
-                .filter { p -> p.annotations.any { it is SettingProperty } }
+                .filter { p -> p.annotations.any { it is Entry } }
                 .map { p -> p as SettingKProp1 }
                 .associateBy { p -> p.name }
 
         /**
-         * A static lookup table which associates each [KProperty1] from [SETTING_PROPERTIES]
+         * A static lookup table which associates each [KProperty1] from [ENTRY_PROPERTIES]
          * with its corresponding companion object.
          * If the companion object did not implement [Setting.SCompanion.fromString]),
          * a [RuntimeException] is thrown.
          */
-        private val COMPANIONS: Map<SettingKProp1, Setting.SCompanion<*>> = SETTING_PROPERTIES.values.associateWith {
+        private val COMPANIONS: Map<SettingKProp1, Setting.SCompanion<*>> = ENTRY_PROPERTIES.values.associateWith {
             p -> p.returnType.classifier.let {
                 if (it is KClass<*>) {
                     it.companionObjectInstance.let { o ->
                         if (o is Setting.SCompanion<*>) {
                             o
                             /*
-                             This method used to return the actual
+                             This routine used to associate the actual
                              fromString: (String) -> Setting<*> method,
-                             but since all companion objects automatically implement
-                             the SCompanion interface by default, this is unnecessary,
-                             and the object can just be returned by default.
+                             but since all companion objects of subclasses of Setting
+                             automatically implement the SCompanion interface by default,
+                             this is unnecessary, and the companion object can just be associated.
                              */
                         }
                         else
@@ -129,7 +122,7 @@ class Settings(
         @JvmStatic
         fun loadFrom(prefs: Preferences): Result<Settings> = synchronized(prefs) {
             val prefKeys = prefs.keys()
-            val missingKey = SETTING_PROPERTIES.keys.firstOrNull { k -> k !in prefKeys }
+            val missingKey = ENTRY_PROPERTIES.keys.firstOrNull { k -> k !in prefKeys }
             return if (missingKey != null) {
                 Result.failure(MissingPreferenceException("Missing entry in preferences: $missingKey", missingKey))
             }
@@ -137,8 +130,8 @@ class Settings(
                 try {
                     Result.success(
                         Settings(
-                            SETTING_PROPERTIES.mapToHashMap { (name, property) ->
-                                // For each entry in SETTING_PROPERTIES:
+                            ENTRY_PROPERTIES.mapToHashMap { (name, property) ->
+                                // For each entry in ENTRY_PROPERTIES:
                                 // Create a pair with the KProperty1 object of class Settings
                                 // and the actual loaded value:
                                 // (name, property) |-> (property, fromString(prefs[name]))
