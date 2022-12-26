@@ -155,7 +155,7 @@ class InfoWindow(title: String) : JFrame(title) {
                 it.alignmentX = CENTER_ALIGNMENT
             }
             forEach(screenTimeLabel, screenTimeDisplay, screenTimePanel::add)
-            add(screenTimePanel, BorderLayout.CENTER)
+            add(screenTimePanel, BorderLayout.NORTH)
         }
 
         section("bottomPanel") {
