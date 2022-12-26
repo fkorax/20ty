@@ -35,69 +35,58 @@ class Settings(
     @Target(AnnotationTarget.PROPERTY)
     private annotation class Entry
 
-    /**
-     * The companion object includes a number of static lookup tables,
-     * which contain Reflection API results introspecting the actual [Settings] class.
-     * These are generated so that the static method [loadFrom] can work in tandem with
-     * the private `Settings(Map<...>)` constructor using only references to the properties
-     * of Settings (e.g. `Settings::lookAndFeel`), and without requiring intermediary constant values
-     * (without string constants, basically).
-     */
     companion object {
         /**
-         * A static lookup table of all [KProperty1] instances of `Settings` properties
-         * marked with `@`[Entry], associated by their `String` [name][KProperty1.name].
+         * A static lookup table of the properties of `Settings` marked with `@`[Entry] and their
+         * [SCompanion][Setting.SCompanion]-implementing companion objects (the necessary "meta" information),
+         * associated by their `String` [name][KProperty1.name].
          *
          * Structure of a lookup table entry:
          * ```
-         * Map.Entry<String, KProperty1<...>>(
+         * // String -> Pair(KProperty1, SCompanion)
+         * Map.Entry<String, Pair<KProperty1<...>, SCompanion<*>>(
          *     key = property.name,
-         *     value = property
+         *     value = (property, getSCompanion(property))
          * )
          * ```
+         *
+         * These are generated so that the static method [loadFrom] can work with
+         * the private `Settings(Map<...>)` constructor using references to the properties
+         * of Settings (e.g. `Settings::lookAndFeel`), without intermediary constant values
+         * (without String constants, basically).
          */
         @Suppress("UNCHECKED_CAST")
-        private val ENTRY_PROPERTIES: Map<String, SettingKProp1> =
+        private val ENTRIES_META: Map<String, Pair<SettingKProp1, Setting.SCompanion<*>>> =
             Settings::class.memberProperties
                 .filter { p -> p.annotations.any { it is Entry } }
-                .map { p -> p as SettingKProp1 }
-                .associateBy { p -> p.name }
+                .map { p -> (p as SettingKProp1).let { prop -> Pair(prop, getSCompanion(prop)) } }
+                .associateBy { (p,_) -> p.name }
 
         /**
-         * A static lookup table which associates each [KProperty1] from [ENTRY_PROPERTIES]
-         * with its corresponding companion object.
-         * If the companion object did not implement [Setting.SCompanion.fromString]),
+         * Retrieves the companion object implementing SCompanion for the given classifier.
+         * If the companion object did not implement the [Setting.SCompanion] interface,
          * a [RuntimeException] is thrown.
          */
-        private val COMPANIONS: Map<SettingKProp1, Setting.SCompanion<*>> = ENTRY_PROPERTIES.values.associateWith {
-            p -> p.returnType.classifier.let {
-                if (it is KClass<*>) {
-                    it.companionObjectInstance.let { o ->
-                        if (o is Setting.SCompanion<*>) {
+        private fun getSCompanion(prop: SettingKProp1): Setting.SCompanion<*> =
+            prop.returnType.classifier.let { classifier ->
+                if (classifier is KClass<*>) {
+                    classifier.companionObjectInstance.let { o ->
+                        if (o is Setting.SCompanion<*>)
                             o
-                            /*
-                             This routine used to associate the actual
-                             fromString: (String) -> Setting<*> method,
-                             but since all companion objects of subclasses of Setting
-                             automatically implement the SCompanion interface by default,
-                             this is unnecessary, and the companion object can just be associated.
-                             */
-                        }
                         else
                             throw RuntimeException(
-                                "Companion of Settings property type ${p.returnType}" +
+                                "Companion of Settings property type ${prop.returnType}" +
                                         "does not implement Setting.SettingCompanion"
                             )
                     }
                 }
                 else {
                     throw RuntimeException(
-                        "@SettingProperty '${p.name}' with type '${p.returnType}'" +
-                                "is not an instance of a class; classifier instead is '${p.returnType.classifier}'"
+                        "Property '${prop.name}' with type '${prop.returnType}'" +
+                                "is not an instance of a class; classifier instead is '${prop.returnType.classifier}'"
                     )
                 }
             }
-        }
 
         private inline fun <reified T, K, V> Map<K, V>.getCasted(key: K): T =
             this[key] as T
@@ -122,7 +111,7 @@ class Settings(
         @JvmStatic
         fun loadFrom(prefs: Preferences): Result<Settings> = synchronized(prefs) {
             val prefKeys = prefs.keys()
-            val missingKey = ENTRY_PROPERTIES.keys.firstOrNull { k -> k !in prefKeys }
+            val missingKey = ENTRIES_META.keys.firstOrNull { k -> k !in prefKeys }
             return if (missingKey != null) {
                 Result.failure(MissingPreferenceException("Missing entry in preferences: $missingKey", missingKey))
             }
@@ -130,14 +119,11 @@ class Settings(
                 try {
                     Result.success(
                         Settings(
-                            ENTRY_PROPERTIES.mapToHashMap { (name, property) ->
-                                // For each entry in ENTRY_PROPERTIES:
-                                // Create a pair with the KProperty1 object of class Settings
-                                // and the actual loaded value:
-                                // (name, property) |-> (property, fromString(prefs[name]))
+                            ENTRIES_META.mapToHashMap { (name, meta) ->
+                                val (property, companion) = meta
                                 Pair(
                                     property,
-                                    prefs.getOrNull(name)?.let(COMPANIONS[property]!!::fromString)
+                                    prefs.getOrNull(name)?.let(companion::fromString)
                                 )
                             }
                         )
