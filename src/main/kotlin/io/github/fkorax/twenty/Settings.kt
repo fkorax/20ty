@@ -11,7 +11,7 @@ import kotlin.reflect.full.memberProperties
 
 private typealias SettingKProp1 = KProperty1<Settings, Setting<*>>
 
-class Settings(
+data class Settings(
     @property:Entry val breakDuration: Setting.BreakDuration,
     @property:Entry val sessionDuration: Setting.SessionDuration,
     @property:Entry val nightLimitTime: Setting.LocalHmTime,
