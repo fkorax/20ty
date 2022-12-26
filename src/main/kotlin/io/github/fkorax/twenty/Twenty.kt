@@ -163,9 +163,17 @@ class Twenty {
 
     private fun showInfoWindow() {
         SwingUtilities.invokeLater {
-            // Show the InfoWindow, centered on screen
-            infoWindow.setLocationRelativeTo(null)
-            infoWindow.isVisible = true
+            // If the info window is not visible:
+            if (!infoWindow.isVisible) {
+                // Show the InfoWindow, centered on screen
+                infoWindow.setLocationRelativeTo(null)
+                infoWindow.isVisible = true
+            }
+            // Otherwise:
+            else {
+                // Simply bring the window to the front
+                infoWindow.toFront()
+            }
         }
     }
 
