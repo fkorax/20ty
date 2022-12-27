@@ -12,11 +12,11 @@ import kotlin.reflect.full.memberProperties
 private typealias SettingKProp1 = KProperty1<Settings, Setting<*>>
 
 data class Settings(
-    @property:Entry val breakDuration: Setting.BreakDuration,
-    @property:Entry val sessionDuration: Setting.SessionDuration,
+    @property:Entry val breakDuration: Setting.BreakSeconds,
+    @property:Entry val sessionDuration: Setting.SessionMinutes,
     @property:Entry val nightLimitTime: Setting.LocalHmTime,
     @property:Entry val nightLimitActive: Setting.ActiveOn,
-    @property:Entry val nightSessionDuration: Setting.SessionDuration,
+    @property:Entry val nightSessionDuration: Setting.SessionMinutes,
     @property:Entry val playAlertSound: Setting.Toggle,
     @property:Entry val lookAndFeel: Setting.LookAndFeel
 ) {

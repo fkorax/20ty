@@ -25,23 +25,51 @@ import javax.swing.*
 
 // All SettingWidgets are capable of producing the current value
 // of the Setting they control, but are responsible for nothing else.
+// (This includes handling the text to display)
 sealed interface SettingWidget<T : Setting<*>> {
 
+    val value: T
+
     class LocalHmTime : SettingWidget<Setting.LocalHmTime>, JPanel() {
+        // A custom component with two spinner fields,
+        // from which the local HH:mm time can be constructed.
+        private val hourSpinner = JSpinner(SpinnerNumberModel(19, 0, 24, 1))
+        private val minuteSpinner = JSpinner(SpinnerNumberModel(0, 0, 60, 1))
 
         init {
-            // A custom component with two spinner fields,
-            // from which the date can be constructed.
             forEach(
-                JSpinner(SpinnerNumberModel(19, 0, 24, 1)),
+                hourSpinner,
                 JLabel(":"),
-                JSpinner(SpinnerNumberModel(0, 0, 60, 1)),
+                minuteSpinner,
                 this::add
             )
         }
 
+        override val value: Setting.LocalHmTime
+            get() = Setting.LocalHmTime(hourSpinner.value as Int, minuteSpinner.value as Int)
+
     }
 
-    class Toggle : SettingWidget<Setting.Toggle>, JCheckBox()
+    class Toggle(text: String? = null) : SettingWidget<Setting.Toggle>, JCheckBox(text) {
+        override val value: Setting.Toggle
+            get() = Setting.Toggle(this.isSelected)
+    }
+
+    class Selection<T>(items: Array<T>) : SettingWidget<T>, JComboBox<T>(items) where T : Enum<T>, T : Setting<*> {
+        @Suppress("UNCHECKED_CAST")
+        override val value: T
+            get() = selectedItem as T
+    }
+
+    class IntRanged<T : Setting.Ranged<Int>>(min: Int, max: Int, val constructor: (Int) -> T) : SettingWidget<T>, JSlider(min, max) {
+
+        init {
+            this.paintLabels = true
+            this.paintTicks = true
+        }
+
+        override val value: T
+            get() = constructor(this.getValue())
+    }
 
 }

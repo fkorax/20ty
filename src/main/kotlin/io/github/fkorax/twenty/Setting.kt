@@ -21,10 +21,6 @@ package io.github.fkorax.twenty
 
 import java.time.DayOfWeek
 import java.time.LocalTime
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.DurationUnit
 
 sealed interface Setting<T> {
     val value: T
@@ -48,47 +44,70 @@ sealed interface Setting<T> {
             throw UnsupportedOperationException("String parser not implemented")
     }
 
+    sealed interface Ranged<T : Comparable<T>> : Setting<T> {
+        val minValue: T
+        val maxValue: T
+    }
+
     @JvmInline
-    value class BreakDuration(override val value: Duration) : Setting<Duration> {
-        companion object : SCompanion<BreakDuration> {
+    value class BreakSeconds(override val value: Int) : Ranged<Int> {
+        companion object : SCompanion<BreakSeconds> {
             const val MIN_SECONDS = 20
-            // TODO Add a maximum
+            // Maximum duration time: 1 minute
+            const val MAX_SECONDS = 60
 
             @JvmStatic
-            val MIN_VALUE = BreakDuration(MIN_SECONDS.seconds)
+            val MIN_VALUE = BreakSeconds(MIN_SECONDS)
+            @JvmStatic
+            val MAX_VALUE = BreakSeconds(MAX_SECONDS)
 
             @JvmStatic
-            override fun fromString(value: String): BreakDuration =
-                BreakDuration(Duration.parse(value))
+            override fun fromString(value: String): BreakSeconds =
+                BreakSeconds(Integer.parseInt(value))
         }
 
         init {
-            require(value.inWholeSeconds >= MIN_SECONDS)
+            require(value >= MIN_SECONDS)
+            require(value <= MAX_SECONDS)
         }
 
-        override fun toString(): String = value.toString(DurationUnit.SECONDS, 0)
+        override val minValue: Int
+            get() = MIN_SECONDS
+        override val maxValue: Int
+            get() = MAX_SECONDS
+
+        override fun toString(): String = value.toString()
 
     }
 
     @JvmInline
-    value class SessionDuration(override val value: Duration) : Setting<Duration> {
-        companion object : SCompanion<SessionDuration> {
+    value class SessionMinutes(override val value: Int) : Ranged<Int> {
+        companion object : SCompanion<SessionMinutes> {
+            const val MIN_MINUTES = 5
             const val MAX_MINUTES = 20
-            // TODO Add a minimum
 
             @JvmStatic
-            val MAX_VALUE = SessionDuration(MAX_MINUTES.minutes)
+            val MIN_VALUE = SessionMinutes(MIN_MINUTES)
+            @JvmStatic
+            val MAX_VALUE = SessionMinutes(MAX_MINUTES)
 
             @JvmStatic
-            override fun fromString(value: String): SessionDuration =
-                SessionDuration(Duration.parse(value))
+            override fun fromString(value: String): SessionMinutes =
+                SessionMinutes(Integer.parseInt(value))
         }
 
         init {
-            require(value.inWholeMinutes <= MAX_MINUTES)
+            require(value >= MIN_MINUTES)
+            require(value <= MAX_MINUTES)
         }
 
-        override fun toString(): String = value.toString(DurationUnit.MINUTES, 0)
+        override val minValue: Int
+            get() = MIN_MINUTES
+
+        override val maxValue: Int
+            get() = MAX_MINUTES
+
+        override fun toString(): String = value.toString()
 
     }
 
@@ -99,6 +118,8 @@ sealed interface Setting<T> {
             override fun fromString(value: String): LocalHmTime =
                 LocalHmTime(LocalTime.parse(value))
         }
+
+        constructor(hour: Int, minute: Int) : this(LocalTime.of(hour, minute))
 
         init {
             // Ensure that the LocalTime value conforms to

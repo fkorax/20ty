@@ -92,22 +92,22 @@ class Twenty {
          * its fallback setting).
          */
         private val FALLBACK_SETTINGS = Settings(
-            breakDuration = Setting.BreakDuration.MIN_VALUE,
-            sessionDuration = Setting.SessionDuration.MAX_VALUE,
+            breakDuration = Setting.BreakSeconds.MIN_VALUE,
+            sessionDuration = Setting.SessionMinutes.MAX_VALUE,
             nightLimitTime = Setting.LocalHmTime(LocalTime.of(21, 0)),
             nightLimitActive = Setting.ActiveOn(emptySet()),    // Night limit turned off by default
-            nightSessionDuration = Setting.SessionDuration(5.minutes),
+            nightSessionDuration = Setting.SessionMinutes(5),
             playAlertSound = Setting.Toggle(false),
             lookAndFeel = Setting.LookAndFeel.CROSS_PLATFORM
             // The default cross-platform look and feel should always work...
         )
 
         private val DEFAULT_SETTINGS_CHANGE = Settings(
-            breakDuration = Setting.BreakDuration.MIN_VALUE,
-            sessionDuration = Setting.SessionDuration.MAX_VALUE,
+            breakDuration = Setting.BreakSeconds.MIN_VALUE,
+            sessionDuration = Setting.SessionMinutes.MAX_VALUE,
             nightLimitTime = Setting.LocalHmTime(LocalTime.of(21, 0)),
             nightLimitActive = Setting.ActiveOn(emptySet()),
-            nightSessionDuration = Setting.SessionDuration(5.minutes),
+            nightSessionDuration = Setting.SessionMinutes(5),
             playAlertSound = Setting.Toggle(false),
             lookAndFeel = Setting.LookAndFeel.NIMBUS
         )
