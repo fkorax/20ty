@@ -1,5 +1,6 @@
 package io.github.fkorax.twenty
 
+import io.github.fkorax.twenty.util.FromString
 import io.github.fkorax.twenty.util.MissingPreferenceException
 import io.github.fkorax.twenty.util.getOrNull
 import io.github.fkorax.twenty.util.mapToHashMap
@@ -9,7 +10,7 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.full.memberProperties
 
-private typealias SettingKProp1 = KProperty1<Settings, Setting<*>>
+private typealias EntryReference = KProperty1<Settings, Setting<*>>
 
 data class Settings(
     @property:Entry val breakDuration: Setting.BreakSeconds,
@@ -21,7 +22,7 @@ data class Settings(
     @property:Entry val lookAndFeel: Setting.LookAndFeel
 ) {
 
-    private constructor(values: Map<SettingKProp1, Setting<*>?>) : this(
+    private constructor(values: Map<EntryReference, Setting<*>?>) : this(
         breakDuration = values.getCasted(Settings::breakDuration),
         sessionDuration = values.getCasted(Settings::sessionDuration),
         nightLimitTime = values.getCasted(Settings::nightLimitTime),
@@ -38,7 +39,7 @@ data class Settings(
     companion object {
         /**
          * A static lookup table of the properties of `Settings` marked with `@`[Entry] and their
-         * [SCompanion][Setting.SCompanion]-implementing companion objects (the necessary "meta" information),
+         * [FromString]-implementing companion objects (the necessary "meta" information),
          * associated by their `String` [name][KProperty1.name].
          *
          * Structure of a lookup table entry:
@@ -56,23 +57,24 @@ data class Settings(
          * (without String constants, basically).
          */
         @Suppress("UNCHECKED_CAST")
-        private val ENTRIES_META: Map<String, Pair<SettingKProp1, Setting.SCompanion<*>>> =
+        private val ENTRIES_META: Map<String, Pair<EntryReference, FromString<out Setting<*>>>> =
             Settings::class.memberProperties
                 .filter { p -> p.annotations.any { it is Entry } }
-                .map { p -> (p as SettingKProp1).let { prop -> Pair(prop, getSCompanion(prop)) } }
+                .map { p -> (p as EntryReference).let { prop -> Pair(prop, getCompanion(prop)) } }
                 .associateBy { (p,_) -> p.name }
 
         /**
-         * Retrieves the companion object implementing SCompanion for the given classifier.
-         * If the companion object did not implement the [Setting.SCompanion] interface,
+         * Retrieves the companion object for the given entry reference.
+         * If the companion object did not implement the [FromString] interface,
          * a [RuntimeException] is thrown.
          */
-        private fun getSCompanion(prop: SettingKProp1): Setting.SCompanion<*> =
+        private fun getCompanion(prop: EntryReference): FromString<out Setting<*>> =
             prop.returnType.classifier.let { classifier ->
                 if (classifier is KClass<*>) {
                     classifier.companionObjectInstance.let { o ->
-                        if (o is Setting.SCompanion<*>)
-                            o
+                        @Suppress("UNCHECKED_CAST")
+                        if (o is FromString<*>)
+                            o as FromString<out Setting<*>>
                         else
                             throw RuntimeException(
                                 "Companion of Settings property type ${prop.returnType}" +

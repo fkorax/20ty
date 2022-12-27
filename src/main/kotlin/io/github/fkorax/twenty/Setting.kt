@@ -19,30 +19,12 @@
 
 package io.github.fkorax.twenty
 
+import io.github.fkorax.twenty.util.FromString
 import java.time.DayOfWeek
 import java.time.LocalTime
 
 sealed interface Setting<T> {
     val value: T
-
-    /**
-     * The sealed interface to be implemented by all companion objects
-     * of children of [Setting].
-     */
-    sealed interface SCompanion<T : Setting<*>> {
-        /**
-         * This function has a default implementation so the compiler doesn't crash
-         * when it is referenced from instances of `SCompanion`:
-         * ```
-         * if (o is Setting.SCompanion<*>) {
-         *      // This reference crashes the compiler. Why?
-         *      o::fromString
-         * }
-         * ```
-         */
-        fun fromString(value: String): T =
-            throw UnsupportedOperationException("String parser not implemented")
-    }
 
     sealed interface Ranged<T : Comparable<T>> : Setting<T> {
         val minValue: T
@@ -51,7 +33,7 @@ sealed interface Setting<T> {
 
     @JvmInline
     value class BreakSeconds(override val value: Int) : Ranged<Int> {
-        companion object : SCompanion<BreakSeconds> {
+        companion object : FromString<BreakSeconds> {
             const val MIN_SECONDS = 20
             // Maximum duration time: 1 minute
             const val MAX_SECONDS = 60
@@ -62,8 +44,8 @@ sealed interface Setting<T> {
             val MAX_VALUE = BreakSeconds(MAX_SECONDS)
 
             @JvmStatic
-            override fun fromString(value: String): BreakSeconds =
-                BreakSeconds(Integer.parseInt(value))
+            override fun fromString(s: String): BreakSeconds =
+                BreakSeconds(Integer.parseInt(s))
         }
 
         init {
@@ -82,7 +64,7 @@ sealed interface Setting<T> {
 
     @JvmInline
     value class SessionMinutes(override val value: Int) : Ranged<Int> {
-        companion object : SCompanion<SessionMinutes> {
+        companion object : FromString<SessionMinutes> {
             const val MIN_MINUTES = 5
             const val MAX_MINUTES = 20
 
@@ -92,8 +74,8 @@ sealed interface Setting<T> {
             val MAX_VALUE = SessionMinutes(MAX_MINUTES)
 
             @JvmStatic
-            override fun fromString(value: String): SessionMinutes =
-                SessionMinutes(Integer.parseInt(value))
+            override fun fromString(s: String): SessionMinutes =
+                SessionMinutes(Integer.parseInt(s))
         }
 
         init {
@@ -113,10 +95,10 @@ sealed interface Setting<T> {
 
     @JvmInline
     value class LocalHmTime(override val value: LocalTime) : Setting<LocalTime> {
-        companion object : SCompanion<LocalHmTime> {
+        companion object : FromString<LocalHmTime> {
             @JvmStatic
-            override fun fromString(value: String): LocalHmTime =
-                LocalHmTime(LocalTime.parse(value))
+            override fun fromString(s: String): LocalHmTime =
+                LocalHmTime(LocalTime.parse(s))
         }
 
         constructor(hour: Int, minute: Int) : this(LocalTime.of(hour, minute))
@@ -134,7 +116,7 @@ sealed interface Setting<T> {
     @JvmInline
     value class ActiveOn(override val value: Set<DayOfWeek>) : Setting<Set<DayOfWeek>> {
 
-        companion object : SCompanion<ActiveOn> {
+        companion object : FromString<ActiveOn> {
             // TODO Test (with black box, that is, the fromString function itself)
             // WDL = Week Day Literal
             private const val WDL = "(MON|TUES|WEDNES|THURS|FRI|SATUR|SUN)DAY"
@@ -145,13 +127,13 @@ sealed interface Setting<T> {
             )
 
             @JvmStatic
-            override fun fromString(value: String) = ActiveOn(when {
-                value == "{}" -> emptySet()
-                value.matches(SINGLE_REGEX) -> setOf(DayOfWeek.valueOf(value.slice(1 until value.length)))
-                value.matches(MULTI_REGEX) -> {
+            override fun fromString(s: String) = ActiveOn(when {
+                s == "{}" -> emptySet()
+                s.matches(SINGLE_REGEX) -> setOf(DayOfWeek.valueOf(s.slice(1 until s.length)))
+                s.matches(MULTI_REGEX) -> {
                     TODO("Take the String apart!")
                 }
-                else -> throw IllegalArgumentException("String cannot be parsed: $value")
+                else -> throw IllegalArgumentException("String cannot be parsed: $s")
             })
         }
 
@@ -177,12 +159,12 @@ sealed interface Setting<T> {
 
     @JvmInline
     value class Toggle(override val value: Boolean) : Setting<Boolean> {
-        companion object : SCompanion<Toggle> {
+        companion object : FromString<Toggle> {
             @JvmStatic
-            override fun fromString(value: String): Toggle = when (value) {
+            override fun fromString(s: String): Toggle = when (s) {
                 "true" -> Toggle(true)
                 "false" -> Toggle(false)
-                else -> throw IllegalArgumentException("String value has to be either \"true\" or \"false\": $value")
+                else -> throw IllegalArgumentException("String value has to be either \"true\" or \"false\": $s")
             }
         }
 
@@ -195,10 +177,10 @@ sealed interface Setting<T> {
         METAL,
         NIMBUS;
 
-        companion object : SCompanion<LookAndFeel> {
+        companion object : FromString<LookAndFeel> {
             @JvmStatic
-            override fun fromString(value: String) =
-                valueOf(value)
+            override fun fromString(s: String) =
+                valueOf(s)
         }
 
         override val value: LookAndFeel
