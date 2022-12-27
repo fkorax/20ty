@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.formdev:flatlaf:2.4")
+    implementation("com.formdev:flatlaf:3.0")
     implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
 }
