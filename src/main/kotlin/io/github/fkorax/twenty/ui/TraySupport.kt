@@ -30,6 +30,11 @@ import java.awt.TrayIcon
 import java.awt.event.ActionListener
 import kotlin.system.exitProcess
 
+/**
+ * ### See also:
+ * [Farewell to the notification area](https://ubuntu.com/blog/notification-area)
+ * [CustomStatusMenuDesignGuidelines](https://wiki.ubuntu.com/CustomStatusMenuDesignGuidelines)
+ */
 sealed class TraySupport() {
     companion object {
         fun getTraySupport(title: String, twentyFun: () -> Unit, interruptFun: () -> Unit): TraySupport =
@@ -47,9 +52,10 @@ sealed class TraySupport() {
             @JvmStatic
             private val trayIconName: String get() =
                 // Use a smaller Ubuntu notification tray compatible icon on Ubuntu 20.0 and later
+                // TODO Replace with ubuntu-compat.png
                 if (System.getProperty("lsb.description").startsWith("Ubuntu") &&
                     (System.getProperty("lsb.release").substringBefore('.').toIntOrNull() ?: 0) >= 20)
-                    "icon-8.png"
+                    "icon-ubuntu-compat.png"
                 else
                     "icon-16.png".also { println(System.getProperty("os.name") + " | " + System.getProperty("os.version")) }
         }
