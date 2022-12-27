@@ -17,24 +17,22 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.fkorax.twenty.ui.util
+package io.github.fkorax.fusion
 
-import javax.swing.Action
-import javax.swing.JLabel
-import javax.swing.border.EmptyBorder
+import java.awt.Menu
+import java.awt.MenuItem
+import java.awt.PopupMenu
 
-fun emptyBorder(inset: Int) = EmptyBorder(inset, inset, inset, inset)
+inline fun popupMenu(label: String, block: PopupMenu.() -> Unit = {}): PopupMenu =
+    PopupMenu(label).apply(block)
 
-operator fun Action.get(key: String): Any? =
-    this.getValue(key)
+inline fun PopupMenu.item(text: String, block: MenuItem.() -> Unit = {}): MenuItem =
+    this.add(MenuItem(text).apply(block))
 
-operator fun Action.set(key: String, value: Any?) =
-    this.putValue(key, value)
+inline fun PopupMenu.menu(text: String, block: Menu.() -> Unit = {}): Menu =
+    this.add(Menu(text).apply(block)) as Menu
 
-fun scaledJLabel(text: String, scaleFactor: Float) = JLabel(text).apply {
-    this.scale(scaleFactor)
-}
+inline fun Menu.item(text: String, block: MenuItem.() -> Unit = {}): MenuItem =
+    this.add(MenuItem(text).apply(block))
 
-fun JLabel.scale(factor: Float) {
-    font = font.deriveFont(font.size2D * factor)
-}
+fun PopupMenu.separator() = this.addSeparator()

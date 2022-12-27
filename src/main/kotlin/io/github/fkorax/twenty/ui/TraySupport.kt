@@ -20,10 +20,10 @@
 package io.github.fkorax.twenty.ui
 
 import io.github.fkorax.twenty.Twenty
-import io.github.fkorax.twenty.ui.util.item
-import io.github.fkorax.twenty.ui.util.menu
-import io.github.fkorax.twenty.ui.util.popupMenu
-import io.github.fkorax.twenty.ui.util.separator
+import io.github.fkorax.fusion.item
+import io.github.fkorax.fusion.menu
+import io.github.fkorax.fusion.popupMenu
+import io.github.fkorax.fusion.separator
 import java.awt.Font
 import java.awt.SystemTray
 import java.awt.TrayIcon

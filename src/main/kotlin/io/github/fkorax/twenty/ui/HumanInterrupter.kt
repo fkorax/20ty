@@ -19,8 +19,8 @@
 
 package io.github.fkorax.twenty.ui
 
+import io.github.fkorax.fusion.scale
 import io.github.fkorax.twenty.ui.util.AnimatedJFrame
-import io.github.fkorax.twenty.ui.util.scaledJLabel
 import io.github.fkorax.twenty.util.forEach
 import io.github.fkorax.twenty.util.sleepSafely
 import java.awt.Color
@@ -77,8 +77,8 @@ class HumanInterrupter {
 
     private class InterruptWindow(private val onRegularlyHidden: () -> Unit) : AnimatedJFrame("20ty") {
         private val contentBox = JPanel()
-        private val message = scaledJLabel("Look at least 20 m into the distance.", 2.0f)
-        private val counter = scaledJLabel("0", 6.0f)
+        private val message = JLabel("Look at least 20 m into the distance.").apply { scale(2.0f) }
+        private val counter = JLabel("0").apply { scale(6.0f) }
 
         // These values are used to control the color animation
         companion object {

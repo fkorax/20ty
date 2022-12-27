@@ -19,14 +19,12 @@
 
 package io.github.fkorax.twenty.ui
 
+import io.github.fkorax.fusion.*
 import io.github.fkorax.twenty.Setting
-import io.github.fkorax.twenty.ui.util.emptyBorder
-import io.github.fkorax.twenty.util.forEach
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.FlowLayout
-import java.util.*
 import javax.swing.*
 
 class SettingsDialog(owner: JFrame) : JDialog(owner, "Settings", true) {
@@ -39,8 +37,8 @@ class SettingsDialog(owner: JFrame) : JDialog(owner, "Settings", true) {
             this.add(row)
         }
 
-        private fun groupBorder(title: String) = BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder(title),
+        private fun groupBorder(title: String) = compoundBorder(
+            titledBorder(title),
             emptyBorder(5)
         )
     }
@@ -49,10 +47,10 @@ class SettingsDialog(owner: JFrame) : JDialog(owner, "Settings", true) {
         this.layout = BorderLayout()
 
         // Differentiate the layout with different regions and buttons at the bottom
-        val settingsBox = Box.createVerticalBox().apply {
+        val settingsBox = verticalBox {
             border = emptyBorder(5)
 
-            val generalBox = Box.createVerticalBox().apply {
+            verticalBox {
                 border = groupBorder("General")
                 // Add all the settings widgets
                 row(JLabel("Session Duration (minutes):"),
@@ -67,35 +65,32 @@ class SettingsDialog(owner: JFrame) : JDialog(owner, "Settings", true) {
                 )
                 row(SettingWidget.Toggle(), JLabel("Play Alert Sound"))
             }
-            add(generalBox)
             add(Box.createRigidArea(Dimension(0,10)))
 
-            val nightBox = Box.createVerticalBox().apply {
+            verticalBox {
                 border = groupBorder("Night")
                 row(JLabel("Night Limit Time: "), SettingWidget.LocalHmTime())
             }
-            add(nightBox)
             add(Box.createRigidArea(Dimension(0, 10)))
 
-            val uiBox = Box.createVerticalBox().apply {
+            verticalBox{
                 border = groupBorder("Appearance & Behavior")
                 row(JLabel("Look and Feel: "), SettingWidget.Selection(Setting.LookAndFeel.values()))
             }
-            add(uiBox)
         }
         add(JScrollPane(settingsBox, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.NORTH)
 
-        val bottomPanel = JPanel(FlowLayout(FlowLayout.TRAILING)).apply {
+        val bottomPanel = panel(FlowLayout(FlowLayout.TRAILING)) {
             // TODO Esc = Exit
             // Three buttons: Cancel, OK, Apply
-            val okButton = JButton("OK")
+            val okButton = button("OK")
             // OK button is default button
             this@SettingsDialog.rootPane.defaultButton = okButton
-            val cancelButton = JButton("Cancel")
+            val cancelButton = button("Cancel")
             // Apply button is disabled by default
-            val applyButton = JButton("Apply").apply { isEnabled = false }
-
-            forEach(okButton, cancelButton, applyButton, this::add)
+            val applyButton = button("Apply") {
+                isEnabled = false
+            }
         }
         add(bottomPanel, BorderLayout.SOUTH)
 

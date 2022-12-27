@@ -19,10 +19,10 @@
 
 package io.github.fkorax.twenty.ui
 
+import io.github.fkorax.fusion.emptyBorder
+import io.github.fkorax.fusion.scale
 import io.github.fkorax.twenty.Twenty
 import io.github.fkorax.twenty.ui.icons.StopIcon
-import io.github.fkorax.twenty.ui.util.emptyBorder
-import io.github.fkorax.twenty.ui.util.scale
 import io.github.fkorax.twenty.util.forEach
 import io.github.fkorax.twenty.util.section
 import java.awt.AWTEvent

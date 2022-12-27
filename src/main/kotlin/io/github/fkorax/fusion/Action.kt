@@ -17,22 +17,12 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.fkorax.twenty.ui.util
+package io.github.fkorax.fusion
 
-import java.awt.Menu
-import java.awt.MenuItem
-import java.awt.PopupMenu
+import javax.swing.Action
 
-inline fun popupMenu(label: String, block: PopupMenu.() -> Unit = {}): PopupMenu =
-    PopupMenu(label).apply(block)
+operator fun Action.get(key: String): Any? =
+    this.getValue(key)
 
-inline fun PopupMenu.item(text: String, block: MenuItem.() -> Unit = {}): MenuItem =
-    this.add(MenuItem(text).apply(block))
-
-inline fun PopupMenu.menu(text: String, block: Menu.() -> Unit = {}): Menu =
-    this.add(Menu(text).apply(block)) as Menu
-
-inline fun Menu.item(text: String, block: MenuItem.() -> Unit = {}): MenuItem =
-    this.add(MenuItem(text).apply(block))
-
-fun PopupMenu.separator() = this.addSeparator()
+operator fun Action.set(key: String, value: Any?) =
+    this.putValue(key, value)
