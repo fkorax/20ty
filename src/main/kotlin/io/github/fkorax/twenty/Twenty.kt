@@ -31,7 +31,6 @@ import java.util.prefs.Preferences
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import kotlin.system.exitProcess
-import kotlin.time.Duration.Companion.minutes
 
 class Twenty {
     companion object {
@@ -101,16 +100,6 @@ class Twenty {
             lookAndFeel = Setting.LookAndFeel.CROSS_PLATFORM
             // The default cross-platform look and feel should always work...
         )
-
-        private val DEFAULT_SETTINGS_CHANGE = Settings(
-            breakDuration = Setting.BreakSeconds.MIN_VALUE,
-            sessionDuration = Setting.SessionMinutes.MAX_VALUE,
-            nightLimitTime = Setting.LocalHmTime(LocalTime.of(21, 0)),
-            nightLimitActive = Setting.ActiveOn(emptySet()),
-            nightSessionDuration = Setting.SessionMinutes(5),
-            playAlertSound = Setting.Toggle(false),
-            lookAndFeel = Setting.LookAndFeel.NIMBUS
-        )
     }
 
     private val logger: Logger = Logger.getLogger(this::class.qualifiedName)
@@ -122,8 +111,7 @@ class Twenty {
 
     /**
      * The program settings. Initialized to [FALLBACK_SETTINGS], but will later be changed
-     * with the loaded settings or [DEFAULT_SETTINGS_CHANGE], if no settings could
-     * be loaded.
+     * with the loaded settings (if not problems are encountered during loading).
      */
     private val settings: Settings = FALLBACK_SETTINGS
 
@@ -139,7 +127,7 @@ class Twenty {
         val storedSettingsChangeResult = Settings.loadFrom(preferences)
         // Apply the stored settings, or apply the default settings,
         // which will also cause them to be stored
-        applySettings(storedSettingsChangeResult.getOrDefault(DEFAULT_SETTINGS_CHANGE))
+        applySettings(storedSettingsChangeResult.getOrDefault(FALLBACK_SETTINGS))
     }
 
     fun applySettings(change: Settings) {
