@@ -25,7 +25,6 @@ import javax.swing.Action
 import javax.swing.ImageIcon
 import javax.swing.JMenuItem
 
-// TODO Rename to BackgroundIndicator
 sealed class BackgroundIndicator {
 
     companion object {
@@ -38,8 +37,6 @@ sealed class BackgroundIndicator {
 
     private class SystemTrayLibrary(icon: ImageIcon, actions: List<Action>) : BackgroundIndicator() {
         init {
-            // Running in debug mode for now. TODO This should be controllable with a global switch:
-            SystemTray.DEBUG = true
             val systemTray = SystemTray.get("20ty")
             systemTray.setImage(icon.image)
             val menu = systemTray.menu

@@ -19,6 +19,7 @@
 
 package io.github.fkorax.twenty
 
+import dorkbox.systemTray.SystemTray
 import io.github.fkorax.twenty.ui.BackgroundIndicator
 import io.github.fkorax.twenty.ui.HumanInterrupter
 import io.github.fkorax.twenty.ui.InfoWindow
@@ -41,9 +42,7 @@ class Twenty {
 
         val timeSinceStart: Long get() = System.currentTimeMillis() - startTime
 
-        // TODO This property should only be visible in this class
-        var developerMode: Boolean = false
-            private set
+        private var developerMode: Boolean = false
 
         @JvmField
         val resources = Resources(
@@ -56,24 +55,15 @@ class Twenty {
             // Use the cross-platform LookAndFeel by default
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
 
-            // TODO Convert args to flags (and detect unknown arguments!)
-            val runAppMain: Boolean = when {
-                "windowTest" in args -> {
-                    windowTest()
-                    false
-                }
-                "--dev" in args -> {
-                    developerMode = true
-                    true
-                }
-                else -> true
-            }
-            if (runAppMain) {
-                Twenty().main()
-            }
+            developerMode = "--dev" in args
+
+            // Only set the SystemTray to DEBUG if we are in developer mode
+            SystemTray.DEBUG = developerMode
+
+            Twenty().main()
         }
 
-        private fun windowTest() {
+        private fun testInterrupt() {
             HumanInterrupter.testWindow(object : ComponentAdapter() {
                 override fun componentHidden(e: ComponentEvent?) {
                     exitProcess(0)
@@ -123,12 +113,13 @@ class Twenty {
     private val showMainWindowAction = TwentyAction("Info", null, "Open the main window.", ::showInfoWindow)
     private val pauseAction = TwentyAction("Pause", null, "Pause the application.") { -> TODO("Implement pause") }
     private val stopAction = TwentyAction("Stop", StopIcon(), "Close the application.", ::stop)
+    private val testInterruptAction = TwentyAction("Test Interrupt", null, "Test the interrupt functionality.", ::testInterrupt)
 
-    val actions = listOf(
+    private val actions = listOf(
         showMainWindowAction,
         pauseAction,
         stopAction
-    )
+    ).let { if (developerMode) it + testInterruptAction else it }
 
     init {
         // Try and load the stored Settings
@@ -153,8 +144,6 @@ class Twenty {
         schedulator.schedule(interrupter::interruptHuman, 20)
     }
 
-    // TODO Expose functions like these through Actions sorted by groups,
-    //  which can then be directly incorporated into the TraySupport
     private fun stop() {
         logger.info("Process stopped by user.")
         exitProcess(0)
