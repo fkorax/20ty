@@ -22,6 +22,8 @@ package io.github.fkorax.twenty
 import io.github.fkorax.twenty.ui.HumanInterrupter
 import io.github.fkorax.twenty.ui.InfoWindow
 import io.github.fkorax.twenty.ui.TraySupport
+import io.github.fkorax.twenty.ui.TwentyAction
+import io.github.fkorax.twenty.ui.icons.StopIcon
 import io.github.fkorax.twenty.util.enrichSystemProperties
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -122,6 +124,16 @@ class Twenty {
     private val traySupport = TraySupport.getTraySupport(title, ::showInfoWindow, interrupter::interruptHuman)
     private val infoWindow = InfoWindow(title)
 
+    private val showMainWindowAction = TwentyAction("20ty", null, "Open the main window.", ::showInfoWindow)
+    private val pauseAction = TwentyAction("Pause", null, "Pause the application.") { -> TODO("Implement pause") }
+    private val stopAction = TwentyAction("Stop", StopIcon(), "Close the application.", ::stop)
+
+    val actions = listOf(
+        showMainWindowAction,
+        pauseAction,
+        stopAction
+    )
+
     init {
         // Try and load the stored Settings
         val storedSettingsChangeResult = Settings.loadFrom(preferences)
@@ -149,6 +161,7 @@ class Twenty {
         exitProcess(0)
     }
 
+    // TODO Rename to MainWindow
     private fun showInfoWindow() {
         SwingUtilities.invokeLater {
             // If the info window is not visible:
