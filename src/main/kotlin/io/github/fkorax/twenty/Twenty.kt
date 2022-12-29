@@ -19,12 +19,11 @@
 
 package io.github.fkorax.twenty
 
+import io.github.fkorax.twenty.ui.BackgroundIndicator
 import io.github.fkorax.twenty.ui.HumanInterrupter
 import io.github.fkorax.twenty.ui.InfoWindow
-import io.github.fkorax.twenty.ui.TraySupport
 import io.github.fkorax.twenty.ui.TwentyAction
 import io.github.fkorax.twenty.ui.icons.StopIcon
-import io.github.fkorax.twenty.util.enrichSystemProperties
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.time.LocalTime
@@ -42,6 +41,7 @@ class Twenty {
 
         val timeSinceStart: Long get() = System.currentTimeMillis() - startTime
 
+        // TODO This property should only be visible in this class
         var developerMode: Boolean = false
             private set
 
@@ -53,9 +53,6 @@ class Twenty {
 
         @JvmStatic
         fun main(args: Array<String>) {
-            // Enrich the system properties first
-            enrichSystemProperties()
-
             // Use the cross-platform LookAndFeel by default
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
 
@@ -121,10 +118,9 @@ class Twenty {
 
     private val schedulator = Schedulator()
     private val interrupter = HumanInterrupter()
-    private val traySupport = TraySupport.getTraySupport(title, ::showInfoWindow, interrupter::interruptHuman)
     private val infoWindow = InfoWindow(title)
 
-    private val showMainWindowAction = TwentyAction("20ty", null, "Open the main window.", ::showInfoWindow)
+    private val showMainWindowAction = TwentyAction("Info", null, "Open the main window.", ::showInfoWindow)
     private val pauseAction = TwentyAction("Pause", null, "Pause the application.") { -> TODO("Implement pause") }
     private val stopAction = TwentyAction("Stop", StopIcon(), "Close the application.", ::stop)
 
@@ -140,6 +136,9 @@ class Twenty {
         // Apply the stored settings, or apply the default settings,
         // which will also cause them to be stored
         applySettings(storedSettingsChangeResult.getOrDefault(FALLBACK_SETTINGS))
+
+        // Create the BackgroundIndicator support
+        BackgroundIndicator.create(actions)
     }
 
     fun applySettings(change: Settings) {

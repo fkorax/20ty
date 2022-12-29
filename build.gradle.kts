@@ -34,6 +34,7 @@ repositories {
 
 dependencies {
     implementation("com.formdev:flatlaf:3.0")
+    implementation("com.dorkbox:SystemTray:4.1")
     implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
 }
