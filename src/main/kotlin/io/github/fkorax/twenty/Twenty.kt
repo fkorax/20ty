@@ -121,17 +121,6 @@ class Twenty {
         stopAction
     ).let { if (developerMode) it + testInterruptAction else it }
 
-    init {
-        // Try and load the stored Settings
-        val storedSettingsChangeResult = Settings.loadFrom(preferences)
-        // Apply the stored settings, or apply the default settings,
-        // which will also cause them to be stored
-        applySettings(storedSettingsChangeResult.getOrDefault(FALLBACK_SETTINGS))
-
-        // Create the BackgroundIndicator support
-        BackgroundIndicator.create(actions)
-    }
-
     fun applySettings(change: Settings) {
         // TODO After every settings change, the new settings should
         //  be stored in preferences
@@ -141,6 +130,26 @@ class Twenty {
     }
 
     fun main() {
+        // Try and load the stored Settings
+        val storedSettingsChangeResult = Settings.loadFrom(preferences)
+        // Apply the stored settings, or apply the default settings,
+        // which will also cause them to be stored
+        applySettings(storedSettingsChangeResult.getOrDefault(FALLBACK_SETTINGS))
+
+        // Create the BackgroundIndicator support
+        try {
+            BackgroundIndicator.create(actions)
+        }
+        catch (t: Throwable) {
+            // BackgroundIndicator may encounter weird Exceptions or Errors
+            // because it is interacting with native components...
+            // In this case, it must be ensured that the process actually stops.
+            System.err.println("Encountered serious problem while creating BackgroundIndicator.")
+            System.err.println("Stack Trace:")
+            t.printStackTrace()
+            System.err.println("Aborting program...")
+            exitProcess(1)
+        }
         schedulator.schedule(interrupter::interruptHuman, 20)
     }
 
