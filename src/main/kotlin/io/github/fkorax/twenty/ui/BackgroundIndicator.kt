@@ -37,7 +37,7 @@ sealed class BackgroundIndicator {
 
     companion object {
         fun create(actions: List<Action>): BackgroundIndicator {
-            // TODO Select an appropriate icon based on OS information
+            // Select an appropriate icon based on OS information
             val icon = Twenty.resources.getIcon(
                 if (OS.isLinux() && OSUtil.Linux.isUbuntu())
                     "indicator-ubuntu.png"
@@ -78,10 +78,14 @@ sealed class BackgroundIndicator {
             try {
                 // First: Install shutdown hook
                 systemTray.installShutdownHook()
+                // Set the tray icon image
                 systemTray.setImage(icon.image)
                 // Build the menu from the given
                 // list of actions
                 val menu = systemTray.menu
+                // TODO Choose platform appropriate icons
+                //  by referencing a to-be-defined property
+                //  of TwentyAction
                 actions.forEach { action ->
                     menu.add(JMenuItem(action))
                 }
@@ -100,7 +104,8 @@ sealed class BackgroundIndicator {
             trayIcon.isImageAutoSize = true
             // TODO Add a default action (the tray icon action listener),
             //   and a way to pass the title...
-            trayIcon.popupMenu = popupMenu("20ty") {
+            // TODO Tooltip should be the default Action's tooltip
+            trayIcon.popupMenu("20ty") {
                 actions.forEach { action ->
                     item(action[Action.NAME] as String) {
                         this.addActionListener(action)

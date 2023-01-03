@@ -22,9 +22,10 @@ package io.github.fkorax.fusion
 import java.awt.Menu
 import java.awt.MenuItem
 import java.awt.PopupMenu
+import java.awt.TrayIcon
 
-inline fun popupMenu(label: String, block: PopupMenu.() -> Unit = {}): PopupMenu =
-    PopupMenu(label).apply(block)
+inline fun TrayIcon.popupMenu(label: String, block: PopupMenu.() -> Unit = {}): PopupMenu =
+    PopupMenu(label).also { pm -> this@popupMenu.popupMenu = pm }.apply(block)
 
 inline fun PopupMenu.item(text: String, block: MenuItem.() -> Unit = {}): MenuItem =
     this.add(MenuItem(text).apply(block))
