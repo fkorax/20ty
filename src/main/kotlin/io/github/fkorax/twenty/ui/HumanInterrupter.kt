@@ -75,7 +75,7 @@ class HumanInterrupter {
     }
 
 
-    private class InterruptWindow(private val onRegularlyHidden: () -> Unit) : AnimatedJFrame("20ty") {
+    private class InterruptWindow(private val onNormallyHidden: () -> Unit) : AnimatedJFrame("20ty") {
         private val contentBox = JPanel()
         private val message = JLabel("Look at least 20 m into the distance.").apply { scale(2.0f) }
         private val counter = JLabel("0").apply { scale(6.0f) }
@@ -148,12 +148,12 @@ class HumanInterrupter {
                         return
                     }
 
-                    hideRegularly()
+                    hideNormally()
                     return
                 }
                 currentThread.isInterrupted -> {
                     // Hide the window, abort
-                    hideRegularly()
+                    hideNormally()
                     return
                 }
                 !this.isVisible -> {
@@ -166,12 +166,12 @@ class HumanInterrupter {
 
         }
 
-        private fun hideRegularly() {
+        private fun hideNormally() {
             SwingUtilities.invokeLater {
                 this.isVisible = false
             }
             // Invoke the onRegularlyHidden() method
-            onRegularlyHidden()
+            onNormallyHidden()
         }
 
     }
