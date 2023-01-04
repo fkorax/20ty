@@ -20,18 +20,21 @@
 package io.github.fkorax.twenty.ui
 
 import io.github.fkorax.fusion.scale
-import io.github.fkorax.twenty.ui.util.AnimatedJFrame
 import io.github.fkorax.twenty.util.forEach
-import io.github.fkorax.twenty.util.sleepSafely
 import java.awt.Color
 import java.awt.Toolkit
+import java.awt.event.ActionEvent
 import java.awt.event.ComponentListener
 import javax.swing.*
 import javax.swing.border.EmptyBorder
-import kotlin.math.cos
 
+/**
+ * See also:
+ * * [How to Use Swing Timers](https://docs.oracle.com/javase/tutorial/uiswing/misc/timer.html)
+ * * [Lesson: Concurrency in Swing](https://docs.oracle.com/javase/tutorial/uiswing/concurrency/index.html)
+ */
 class HumanInterrupter {
-    private val interruptWindow = InterruptWindow(::onRegularlyHidden)
+    private val interruptWindow = InterruptWindow()
 
     companion object {
 
@@ -39,139 +42,103 @@ class HumanInterrupter {
         fun testWindow(componentListener: ComponentListener) {
             val interrupter = HumanInterrupter()
             interrupter.interruptWindow.addComponentListener(componentListener)
-            interrupter.interruptHuman()
+            interrupter.interruptHuman(20)
         }
 
     }
 
-    fun interruptHuman() {
+    /**
+     * Interrupts the human user both visually and with sounds.
+     *
+     * For now, the interrupt is not animated. In the future, a new parameter
+     * `animated: Boolean` will be used to control whether an interrupt is animated
+     * or not.
+     */
+    fun interruptHuman(durationInSeconds: Int) {
         if (interruptWindow.isVisible) {
             println("Interrupt Window is still visible. Not showing again.")
         }
         else {
             SwingUtilities.invokeLater {
+                // Create the Swing Timer with the specified duration (in seconds)
+                val timer = Timer(durationInSeconds*1000, ::onTimerFinished)
+                timer.isRepeats = false
+
+                // Set the counter display to the given duration of the interrupt
+                // (In the future, the counter will once again be animated)
+                // TODO Do this Locale-sensitively!!
+                interruptWindow.counterText = "$durationInSeconds s"
+
                 // Center and show the interrupt window
                 interruptWindow.setLocationRelativeTo(null)
                 interruptWindow.isVisible = true
                 // Put the window to the front, so the user sees it
-                // (but don't request focus!)
+                // (but don't request focus!!)
                 interruptWindow.toFront()
+
                 // Beep
                 // TODO Allow the user to turn this off; and later,
                 //  to choose in a combo box between a System Beep, 20ty sounds, and a custom sound file
+                //  (controlled here by a method parameter)
                 playAlertSound()
                 // TODO Allow notifications to be turned on/off
                 // trayIcon?.displayMessage("Look outside", "Look 20 m into the distance.", TrayIcon.MessageType.NONE)
+
+                // Starting with the beep, a timer is running for the
+                // specified duration
+                timer.start()
             }
         }
     }
 
     private fun playAlertSound() = Toolkit.getDefaultToolkit().beep()
 
-    private fun onRegularlyHidden() {
+    private fun onTimerFinished(e: ActionEvent?) {
         // An alert sound is only played when the window
-        // is hidden regularly (i.e. not closed by the user)
-        playAlertSound()
+        // is hidden by the timer (i.e. not closed by the user)
+        // If the window is already no longer visible when the timer
+        // finishes, nothing needs to be done.
+        if (interruptWindow.isVisible) {
+            // First, play an alert sound
+            playAlertSound()
+            // Hide the window
+            interruptWindow.isVisible = false
+        }
     }
 
 
-    private class InterruptWindow(private val onNormallyHidden: () -> Unit) : AnimatedJFrame("20ty") {
-        private val contentBox = JPanel()
-        private val message = JLabel("Look at least 20 m into the distance.").apply { scale(2.0f) }
-        private val counter = JLabel("0").apply { scale(6.0f) }
+    private class InterruptWindow : JFrame("20ty") {
+        private val messageDisplay = JLabel("Look at least 20 m into the distance.").apply { scale(2.0f) }
+        private val counterDisplay = JLabel("///").apply { scale(6.0f) }
 
-        // These values are used to control the color animation
-        companion object {
-            private const val A = 255
-            private const val T = 40_000
-            private const val Ah = A / 2
-            private const val a: Double = A / 2.0
-            private const val b: Double = Math.PI / T   // Not 2*PI because the animation is not supposed to loop back
-            // to the start value (only from start to end)
-        }
+        var counterText: String
+            get() = counterDisplay.text
+            set(value) { counterDisplay.text = value }
 
         init {
             // Window configuration
             this.type = Type.NORMAL
+            this.defaultCloseOperation = WindowConstants.HIDE_ON_CLOSE
+            this.isResizable = false
 
-            val padSize = counter.font.size
+            val padSize = counterDisplay.font.size
 
             // Content Pane configuration
-            this.contentPane = contentBox.apply {
+            this.contentPane = JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
                 border = EmptyBorder(padSize, padSize, padSize, padSize)
                 background = Color.BLACK
             }
 
-            forEach(message, counter) {
+            forEach(messageDisplay, counterDisplay) {
                 it.foreground = Color.WHITE
                 it.alignmentX = CENTER_ALIGNMENT
             }
 
-            forEach(message, Box.createVerticalStrut(message.font.size), counter,
+            forEach(messageDisplay, Box.createVerticalStrut(messageDisplay.font.size), counterDisplay,
                 this::add)
 
-            defaultCloseOperation = WindowConstants.HIDE_ON_CLOSE
-            isResizable = false
-
             pack()
-        }
-
-        override fun animate(currentThread: Thread, sleepTime: Long) {
-            animate(currentThread, sleepTime, System.currentTimeMillis())
-        }
-
-        private tailrec fun animate(currentThread: Thread, sleepTime: Long, startTime: Long) {
-            val elapsedTime: Long = System.currentTimeMillis() - startTime
-
-            // Set the counter and the colors
-            counter.text = "${(elapsedTime / 1000).let { if (it >= 21) 40-it else it }}"
-
-            val fg: Int = (a * cos(b *elapsedTime)).toInt() + Ah
-            val bg: Int = 255 - fg
-
-            val fgColor = Color(fg, fg, fg)
-            message.foreground = fgColor
-            counter.foreground = fgColor
-            contentBox.background = Color(bg, bg, bg)
-
-            sleepSafely(sleepTime) {
-                // Instant abort
-                return
-            }
-
-            when {
-                elapsedTime >= 40_000 -> {
-                    // Hide the window with a 1 s delay, abort
-                    sleepSafely(1000) {
-                        // Instant abort
-                        return
-                    }
-
-                    hideNormally()
-                    return
-                }
-                currentThread.isInterrupted -> {
-                    // Hide the window, abort
-                    hideNormally()
-                    return
-                }
-                !this.isVisible -> {
-                    // Abort
-                    return
-                }
-                // Otherwise, continue the recursion
-                else -> animate(currentThread, sleepTime, startTime)
-            }
-
-        }
-
-        private fun hideNormally() {
-            SwingUtilities.invokeLater {
-                this.isVisible = false
-            }
-            // Invoke the onRegularlyHidden() method
-            onNormallyHidden()
         }
 
     }

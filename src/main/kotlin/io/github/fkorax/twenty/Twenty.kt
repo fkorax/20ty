@@ -150,7 +150,7 @@ class Twenty {
             System.err.println("Aborting program...")
             exitProcess(1)
         }
-        schedulator.schedule(interrupter::interruptHuman, 20)
+        schedulator.schedule({ interrupter.interruptHuman(20) }, 20)
     }
 
     private fun stop() {
