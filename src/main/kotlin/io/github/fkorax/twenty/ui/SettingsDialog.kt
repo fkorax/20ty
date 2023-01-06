@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022  Franchesko Korako
+ * Copyright © 2022, 2023  Franchesko Korako
  *
  * This file is part of 20ty.
  *
@@ -21,11 +21,13 @@ package io.github.fkorax.twenty.ui
 
 import io.github.fkorax.fusion.*
 import io.github.fkorax.twenty.Setting
+import io.github.fkorax.twenty.Settings
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.*
+import kotlin.reflect.KClass
 
 class SettingsDialog(owner: JFrame) : JDialog(owner, "Settings", true) {
     companion object {
@@ -46,39 +48,53 @@ class SettingsDialog(owner: JFrame) : JDialog(owner, "Settings", true) {
     init {
         this.layout = BorderLayout()
 
-        // Differentiate the layout with different regions and buttons at the bottom
-        val settingsBox = verticalBox {
+        val settingsBox = Box.createVerticalBox().apply {
             border = emptyBorder(5)
+            
+            for (group in Settings.Entry.Group.values()) {
+                verticalBox {
+                    border = groupBorder(group.name)
 
-            verticalBox {
-                border = groupBorder("General")
-                // Add all the settings widgets
-                row(JLabel("Session Duration (minutes):"),
-                    SettingWidget.IntRanged(
-                        Setting.SessionMinutes.MIN_MINUTES,
-                        Setting.SessionMinutes.MAX_MINUTES
-                    ) { Setting.SessionMinutes(it) }.apply {
-                        majorTickSpacing = 5
-                        minorTickSpacing = 1
-                        labelTable = createStandardLabels(5)
-                    }
-                )
-                row(SettingWidget.Toggle(), JLabel("Play Alert Sound"))
-            }
-            add(Box.createRigidArea(Dimension(0,10)))
-
-            verticalBox {
-                border = groupBorder("Night")
-                row(JLabel("Night Limit Time: "), SettingWidget.LocalHmTime())
-            }
-            add(Box.createRigidArea(Dimension(0, 10)))
-
-            verticalBox{
-                border = groupBorder("Appearance & Behavior")
-                row(JLabel("Look and Feel: "), SettingWidget.Selection(Setting.LookAndFeel.values()))
+                    // Find all Settings entries which correspond to this Group,
+                    // and sort them according to their ordinal
+                    Settings.ENTRIES_META_INFO.values
+                        .filter { meta -> meta.annotation.group == group }
+                        .sortedBy { meta -> meta.annotation.ordinal }
+                        .forEach { entryMeta ->
+                            val name = entryMeta.reference.name
+                            entryMeta.reference.returnType.classifier?.let { classifier ->
+                                if (classifier is KClass<*>) {
+                                    when (classifier) {
+                                        Setting.Toggle::class -> row(
+                                            SettingWidget.Toggle(name)
+                                        )
+                                        Setting.LookAndFeel::class -> row(
+                                            JLabel(name),
+                                            SettingWidget.Selection(Setting.LookAndFeel.values())
+                                        )
+                                        Setting.SessionMinutes::class -> {
+                                            row(JLabel(name))
+                                            row(SettingWidget.IntRanged(
+                                                    Setting.SessionMinutes.MIN_MINUTES,
+                                                    Setting.SessionMinutes.MAX_MINUTES
+                                                ) { Setting.SessionMinutes(it) }.apply {
+                                                    majorTickSpacing = 5
+                                                    minorTickSpacing = 1
+                                                    labelTable = createStandardLabels(5)
+                                                })
+                                        }
+                                        else -> row(JLabel("Unsupported type"))
+                                    }
+                                }
+                                else throw RuntimeException("Unexpected type (classifier): $classifier")
+                            } ?: throw NullPointerException("No classifier found")
+                        }
+                }
+                add(Box.createRigidArea(Dimension(0,10)))
             }
         }
-        add(JScrollPane(settingsBox, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.NORTH)
+        add(JScrollPane(settingsBox, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER),
+            BorderLayout.NORTH)
 
         val bottomPanel = panel(FlowLayout(FlowLayout.TRAILING)) {
             // TODO Esc = Exit
