@@ -19,7 +19,8 @@
 
 package io.github.fkorax.twenty.util
 
-interface FromString<R> {
+@FunctionalInterface
+fun interface FromString<R> {
 
     fun fromString(s: String): R
 
