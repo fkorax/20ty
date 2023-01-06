@@ -1,9 +1,7 @@
 package io.github.fkorax.twenty
 
-import io.github.fkorax.twenty.util.FromString
-import io.github.fkorax.twenty.util.MissingPreferenceException
-import io.github.fkorax.twenty.util.getOrNull
-import io.github.fkorax.twenty.util.mapToHashMap
+import io.github.fkorax.twenty.Settings.Entry.Group
+import io.github.fkorax.twenty.util.*
 import java.util.prefs.Preferences
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
@@ -13,28 +11,56 @@ import kotlin.reflect.full.memberProperties
 private typealias EntryReference = KProperty1<Settings, Setting<*>>
 
 data class Settings(
-    @property:Entry val breakDuration: Setting.BreakSeconds,
-    @property:Entry val sessionDuration: Setting.SessionMinutes,
-    @property:Entry val nightLimitTime: Setting.LocalHmTime,
-    @property:Entry val nightLimitActive: Setting.ActiveOn,
-    @property:Entry val nightSessionDuration: Setting.SessionMinutes,
-    @property:Entry val playAlertSound: Setting.Toggle,
-    @property:Entry val lookAndFeel: Setting.LookAndFeel
+    @property:Entry(Group.DAY, 1) val sessionDuration: Setting.SessionMinutes,
+    @property:Entry(Group.DAY, 2) val breakDuration: Setting.BreakSeconds,
+    @property:Entry(Group.NIGHT, 1) val nightLimitTime: Setting.LocalHmTime,
+    @property:Entry(Group.NIGHT, 2) val nightLimitActive: Setting.ActiveOn,
+    @property:Entry(Group.NIGHT, 3) val nightSessionDuration: Setting.SessionMinutes,
+    @property:Entry(Group.APP_BEHAVIOR, 1) val lookAndFeel: Setting.LookAndFeel,
+    @property:Entry(Group.APP_BEHAVIOR, 2) val playAlertSound: Setting.Toggle,
 ) {
 
     private constructor(values: Map<EntryReference, Setting<*>?>) : this(
-        breakDuration = values.getCasted(Settings::breakDuration),
         sessionDuration = values.getCasted(Settings::sessionDuration),
+        breakDuration = values.getCasted(Settings::breakDuration),
         nightLimitTime = values.getCasted(Settings::nightLimitTime),
         nightLimitActive = values.getCasted(Settings::nightLimitActive),
         nightSessionDuration = values.getCasted(Settings::nightSessionDuration),
+        lookAndFeel = values.getCasted(Settings::lookAndFeel),
         playAlertSound = values.getCasted(Settings::playAlertSound),
-        lookAndFeel = values.getCasted(Settings::lookAndFeel)
     )
 
     @Retention(AnnotationRetention.RUNTIME)
     @Target(AnnotationTarget.PROPERTY)
-    private annotation class Entry
+    annotation class Entry(val group: Group, val ordinal: Int) {
+        enum class Group {
+            /**
+             * Used for the standard/day settings,
+             * before the night limit is reached
+             * (if activated).
+             * @see [Group.NIGHT]
+             */
+            DAY,
+            /**
+             * Used for settings which control the
+             * behavior of the app after the night limit
+             * is reached.
+             * @see [Group.DAY]
+             */
+            NIGHT,
+            /**
+             * Used for settings which relate to the
+             * *general* Appearance & Behavior of the app.
+             */
+            APP_BEHAVIOR
+        }
+
+        data class MetaInfo(
+            val reference: EntryReference,
+            val annotation: Entry,
+            val stringConverter: FromString<out Setting<*>>
+        )
+    }
 
     companion object {
         /**
@@ -57,11 +83,15 @@ data class Settings(
          * (without String constants, basically).
          */
         @Suppress("UNCHECKED_CAST")
-        private val ENTRIES_META: Map<String, Pair<EntryReference, FromString<out Setting<*>>>> =
-            Settings::class.memberProperties
-                .filter { p -> p.annotations.any { it is Entry } }
-                .map { p -> (p as EntryReference).let { prop -> Pair(prop, getCompanion(prop)) } }
-                .associateBy { (p,_) -> p.name }
+        @JvmField
+        val ENTRIES_META_INFO: Map<String, Entry.MetaInfo> = Settings::class.memberProperties.mapNotNull { p ->
+            val entryAnnotation: Entry? = p.annotations.find { it is Entry } as Entry?
+            entryAnnotation?.let {
+                val er = p as EntryReference
+                Entry.MetaInfo(er, entryAnnotation, getCompanion(er))
+            }
+        }
+        .associateBy { mi -> mi.reference.name }
 
         /**
          * Retrieves the companion object for the given entry reference.
@@ -113,7 +143,7 @@ data class Settings(
         @JvmStatic
         fun loadFrom(prefs: Preferences): Result<Settings> = synchronized(prefs) {
             val prefKeys = prefs.keys()
-            val missingKey = ENTRIES_META.keys.firstOrNull { k -> k !in prefKeys }
+            val missingKey = ENTRIES_META_INFO.keys.firstOrNull { k -> k !in prefKeys }
             return if (missingKey != null) {
                 Result.failure(MissingPreferenceException("Missing entry in preferences: $missingKey", missingKey))
             }
@@ -121,11 +151,10 @@ data class Settings(
                 try {
                     Result.success(
                         Settings(
-                            ENTRIES_META.mapToHashMap { (name, meta) ->
-                                val (property, companion) = meta
+                            ENTRIES_META_INFO.mapToHashMap { (name, meta) ->
                                 Pair(
-                                    property,
-                                    prefs.getOrNull(name)?.let(companion::fromString)
+                                    meta.reference,
+                                    prefs.getOrNull(name)?.let(meta.stringConverter::fromString)
                                 )
                             }
                         )
