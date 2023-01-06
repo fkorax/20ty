@@ -92,7 +92,7 @@ class InfoWindow(title: String) : JFrame(title) {
     private var lastUpdateMillis = 0L
     private fun updateScreenTimeDisplay() = synchronized(screenTimeDisplay) {
         if (System.currentTimeMillis() - lastUpdateMillis >= 1000) {
-            screenTimeDisplay.millis = Twenty.timeSinceStart
+            screenTimeDisplay.millis = Twenty.elapsedTime
             logger.finest("Updated screen time display.")
             lastUpdateMillis = System.currentTimeMillis()
         }

@@ -40,7 +40,7 @@ class Twenty {
         @JvmField
         val startTime: Long = System.currentTimeMillis()
 
-        val timeSinceStart: Long get() = System.currentTimeMillis() - startTime
+        val elapsedTime: Long get() = System.currentTimeMillis() - startTime
 
         private var developerMode: Boolean = false
 
