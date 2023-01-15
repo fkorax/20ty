@@ -58,8 +58,8 @@ sealed class BackgroundIndicator {
                         e.printStackTrace()
                         System.err.println("Attempting to use AWT SystemTray instead...")
                     }
-                    // Use AWT SystemTray as fallback
-                    AWT(icon, actionTree)
+                    // Use the AWT SystemTray as fallback
+                    AwtSystemTray(icon, actionTree)
                 }
             }
             catch (t: Throwable) {
@@ -132,8 +132,7 @@ sealed class BackgroundIndicator {
 
     }
 
-    // TODO Rename everything AWT to Awt (more legible); rename to AwtSystemTray
-    private class AWT(icon: ImageIcon, actionTree: ActionTree<TwentyAction>) : BackgroundIndicator() {
+    private class AwtSystemTray(icon: ImageIcon, actionTree: ActionTree<TwentyAction>) : BackgroundIndicator() {
         init {
             val trayIcon = TrayIcon(icon.image, "20ty")
             trayIcon.isImageAutoSize = true
@@ -141,14 +140,14 @@ sealed class BackgroundIndicator {
             //   and a way to pass the title...
             // TODO Tooltip should be the default Action's tooltip
             trayIcon.popupMenu("20ty") {
-                AWTNodeProcessor(this).processNode(actionTree.root)
+                AwtNodeProcessor(this).processNode(actionTree.root)
             }
             // Add the icon to the system tray
             AWTSystemTray.getSystemTray().add(trayIcon)
         }
 
         @JvmInline
-        private value class AWTNodeProcessor(private val menu: AWTMenu) : ActionTree.NodeProcessor<TwentyAction> {
+        private value class AwtNodeProcessor(private val menu: AWTMenu) : ActionTree.NodeProcessor<TwentyAction> {
             override fun processLeaf(leaf: Leaf<TwentyAction>) {
                 val action = leaf.action
                 menu.item(action[Action.NAME] as String) {
@@ -156,8 +155,8 @@ sealed class BackgroundIndicator {
                 }
             }
 
-            override fun processBranch(branch: Branch<TwentyAction>): AWTNodeProcessor =
-                AWTNodeProcessor(menu.menu(branch.text))
+            override fun processBranch(branch: Branch<TwentyAction>): AwtNodeProcessor =
+                AwtNodeProcessor(menu.menu(branch.text))
 
         }
 
