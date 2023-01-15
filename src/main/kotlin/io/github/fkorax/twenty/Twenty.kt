@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022  Franchesko Korako
+ * Copyright © 2022, 2023  Franchesko Korako
  *
  * This file is part of 20ty.
  *
@@ -25,6 +25,8 @@ import io.github.fkorax.twenty.ui.HumanInterrupter
 import io.github.fkorax.twenty.ui.InfoWindow
 import io.github.fkorax.twenty.ui.TwentyAction
 import io.github.fkorax.twenty.ui.icons.StopIcon
+import io.github.fkorax.twenty.ui.util.ActionTree
+import io.github.fkorax.twenty.ui.util.actionTree
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.time.LocalTime
@@ -64,6 +66,9 @@ class Twenty {
         }
 
         private fun testInterrupt() {
+            // TODO A window test should not abort the program.
+            //  Just output/log something instead, like
+            //  "Interrupt test successful"
             HumanInterrupter.testWindow(object : ComponentAdapter() {
                 override fun componentHidden(e: ComponentEvent?) {
                     exitProcess(0)
@@ -115,11 +120,18 @@ class Twenty {
     private val stopAction = TwentyAction("Stop", StopIcon(), "Close the application.", ::stop)
     private val testInterruptAction = TwentyAction("Test Interrupt", null, "Test the interrupt functionality.", ::testInterrupt)
 
-    private val actions = listOf(
-        showMainWindowAction,
-        pauseAction,
-        stopAction
-    ).let { if (developerMode) it + testInterruptAction else it }
+    private val actionTree: ActionTree<TwentyAction> = actionTree("20ty") {
+        leaves(
+            showMainWindowAction,
+            pauseAction,
+            stopAction
+        )
+        if (developerMode) {
+            branch("Developer Options") {
+                leaf(testInterruptAction)
+            }
+        }
+    }
 
     fun applySettings(change: Settings) {
         // TODO After every settings change, the new settings should
@@ -138,7 +150,7 @@ class Twenty {
 
         // Create the BackgroundIndicator support
         try {
-            BackgroundIndicator.create(actions)
+            BackgroundIndicator.create(actionTree)
         }
         catch (t: Throwable) {
             // BackgroundIndicator may encounter weird Exceptions or Errors
@@ -148,6 +160,7 @@ class Twenty {
             System.err.println("Stack Trace:")
             t.printStackTrace()
             System.err.println("Aborting program...")
+            // Abort with an exit code indicating that an error occurred
             exitProcess(1)
         }
         schedulator.schedule({ interrupter.interruptHuman(20) }, 20)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022  Franchesko Korako
+ * Copyright © 2022, 2023  Franchesko Korako
  *
  * This file is part of 20ty.
  *
@@ -35,5 +35,8 @@ inline fun PopupMenu.menu(text: String, block: Menu.() -> Unit = {}): Menu =
 
 inline fun Menu.item(text: String, block: MenuItem.() -> Unit = {}): MenuItem =
     this.add(MenuItem(text).apply(block))
+
+inline fun Menu.menu(text: String, block: Menu.() -> Unit = {}): Menu =
+    this.add(Menu(text).apply(block)) as Menu
 
 fun PopupMenu.separator() = this.addSeparator()

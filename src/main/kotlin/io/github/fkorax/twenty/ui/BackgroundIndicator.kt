@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022  Franchesko Korako
+ * Copyright © 2022, 2023  Franchesko Korako
  *
  * This file is part of 20ty.
  *
@@ -21,22 +21,26 @@ package io.github.fkorax.twenty.ui
 
 import dorkbox.os.OS
 import dorkbox.os.OSUtil
+import dorkbox.systemTray.Menu
 import dorkbox.systemTray.SystemTray
 import io.github.fkorax.fusion.get
 import io.github.fkorax.fusion.item
+import io.github.fkorax.fusion.menu
 import io.github.fkorax.fusion.popupMenu
 import io.github.fkorax.twenty.Twenty
+import io.github.fkorax.twenty.ui.util.ActionTree
+import io.github.fkorax.twenty.ui.util.ActionTree.Node.Branch
+import io.github.fkorax.twenty.ui.util.ActionTree.Node.Leaf
 import io.github.fkorax.twenty.util.section
 import java.awt.TrayIcon
-import javax.swing.Action
-import javax.swing.ImageIcon
-import javax.swing.JMenuItem
+import javax.swing.*
+import java.awt.Menu as AWTMenu
 import java.awt.SystemTray as AWTSystemTray
 
 sealed class BackgroundIndicator {
 
     companion object {
-        fun create(actions: List<Action>): BackgroundIndicator {
+        fun create(actionTree: ActionTree<TwentyAction>): BackgroundIndicator {
             // Select an appropriate icon based on OS information
             val icon = Twenty.resources.getIcon(
                 if (OS.isLinux() && OSUtil.Linux.isUbuntu())
@@ -46,7 +50,7 @@ sealed class BackgroundIndicator {
             )
             return try {
                 try {
-                    SystemTrayLibrary(icon, actions)
+                    SystemTrayLibrary(icon, actionTree)
                 }
                 catch (e: Exception) {
                     section("Exception handling") {
@@ -55,7 +59,7 @@ sealed class BackgroundIndicator {
                         System.err.println("Attempting to use AWT SystemTray instead...")
                     }
                     // Use AWT SystemTray as fallback
-                    AWT(icon, actions)
+                    AWT(icon, actionTree)
                 }
             }
             catch (t: Throwable) {
@@ -63,16 +67,17 @@ sealed class BackgroundIndicator {
                 // is tricky, so we catch and print any Throwable
                 // (including Errors) before rethrowing it again
                 // The rethrow is necessary because of things like
-                // ThreadDeath, -> s. its documentation
+                // ThreadDeath, -> s. documentation of ThreadDeath
                 System.err.println("Error while instantiating BackgroundIndicator:")
                 System.err.println("${t::class.qualifiedName}: ${t.message}")
                 System.err.println("(rethrown)")
+                // Rethrow
                 throw t
             }
         }
     }
 
-    private class SystemTrayLibrary(icon: ImageIcon, actions: List<Action>) : BackgroundIndicator() {
+    private class SystemTrayLibrary(icon: ImageIcon, actionTree: ActionTree<TwentyAction>) : BackgroundIndicator() {
         init {
             val systemTray = SystemTray.get("20ty")
             try {
@@ -86,19 +91,49 @@ sealed class BackgroundIndicator {
                 // TODO Choose platform appropriate icons
                 //  by referencing a to-be-defined property
                 //  of TwentyAction
-                actions.forEach { action ->
-                    menu.add(JMenuItem(action))
-                }
+
+                // Choose the appropriate NodeProcessor implementation
+                // based on the desktop environment of the platform
+                (when {
+                    OSUtil.DesktopEnv.isGnome() -> ::GnomeNodeProcessor
+                    else -> ::DefaultNodeProcessor
+                })(menu).processNode(actionTree.root)
             }
             catch (t: Throwable) {
                 // Shut down the system tray, just in case
                 // it didn't happen already (correctly)
                 systemTray.shutdown()
+                // Rethrow
+                throw t
             }
         }
+
+        private open class DefaultNodeProcessor(protected val menu: Menu) : ActionTree.NodeProcessor<TwentyAction> {
+            override fun processLeaf(leaf: Leaf<TwentyAction>) {
+                menu.add(JMenuItem(leaf.action))
+            }
+
+            override fun processBranch(branch: Branch<TwentyAction>): DefaultNodeProcessor =
+                DefaultNodeProcessor(menu.add(JMenu(branch.text)))
+        }
+
+        /**
+         * The only difference between [GnomeNodeProcessor] and [DefaultNodeProcessor] is
+         * that on GNOME environments, submenus in the tray menu are not supported,
+         * so this node processor simply inserts a separator to differentiate
+         * between items belonging to different menus.
+         */
+        private class GnomeNodeProcessor(menu: Menu) : DefaultNodeProcessor(menu) {
+            override fun processBranch(branch: Branch<TwentyAction>): GnomeNodeProcessor {
+                menu.add(JSeparator())
+                return this
+            }
+        }
+
     }
 
-    private class AWT(icon: ImageIcon, actions: List<Action>) : BackgroundIndicator() {
+    // TODO Rename everything AWT to Awt (more legible); rename to AwtSystemTray
+    private class AWT(icon: ImageIcon, actionTree: ActionTree<TwentyAction>) : BackgroundIndicator() {
         init {
             val trayIcon = TrayIcon(icon.image, "20ty")
             trayIcon.isImageAutoSize = true
@@ -106,15 +141,26 @@ sealed class BackgroundIndicator {
             //   and a way to pass the title...
             // TODO Tooltip should be the default Action's tooltip
             trayIcon.popupMenu("20ty") {
-                actions.forEach { action ->
-                    item(action[Action.NAME] as String) {
-                        this.addActionListener(action)
-                    }
-                }
+                AWTNodeProcessor(this).processNode(actionTree.root)
             }
             // Add the icon to the system tray
             AWTSystemTray.getSystemTray().add(trayIcon)
         }
+
+        @JvmInline
+        private value class AWTNodeProcessor(private val menu: AWTMenu) : ActionTree.NodeProcessor<TwentyAction> {
+            override fun processLeaf(leaf: Leaf<TwentyAction>) {
+                val action = leaf.action
+                menu.item(action[Action.NAME] as String) {
+                    this.addActionListener(action)
+                }
+            }
+
+            override fun processBranch(branch: Branch<TwentyAction>): AWTNodeProcessor =
+                AWTNodeProcessor(menu.menu(branch.text))
+
+        }
+
     }
 
 }
