@@ -14,7 +14,7 @@ in your daily work rhythm.
 ## License
 [![GPL v3 logo](images/gpl-v3-logo.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-Copyright © 2022  Franchesko Korako
+Copyright © 2022, 2023  Franchesko Korako
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free Software Foundation,
