@@ -66,12 +66,9 @@ class Twenty {
         }
 
         private fun testInterrupt() {
-            // TODO A window test should not abort the program.
-            //  Just output/log something instead, like
-            //  "Interrupt test successful"
             HumanInterrupter.testWindow(object : ComponentAdapter() {
                 override fun componentHidden(e: ComponentEvent?) {
-                    exitProcess(0)
+                    println("Interrupt window hidden. Test successful?")
                 }
             })
         }
