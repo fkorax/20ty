@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.7.20"
+    java
     application
     idea
 }
@@ -33,6 +34,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.jetbrains:annotations:16.0.2")
     implementation("com.formdev:flatlaf:3.0")
     implementation("com.dorkbox:SystemTray:4.1")
     // Has a lower version for compatibility with SystemTray:
@@ -50,5 +52,9 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
+}
+
+tasks.withType<JavaCompile> {
+    targetCompatibility = "11"
 }
