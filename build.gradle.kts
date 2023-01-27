@@ -29,6 +29,8 @@ plugins {
 group = "io.github.fkorax"
 version = "1.0-SNAPSHOT"
 
+val jvmTarget = "11"
+
 repositories {
     mavenCentral()
 }
@@ -52,10 +54,10 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
+    kotlinOptions.jvmTarget = jvmTarget
 }
 
 tasks.withType<JavaCompile> {
-    sourceCompatibility = "11"
-    targetCompatibility = "11"
+    sourceCompatibility = jvmTarget
+    targetCompatibility = jvmTarget
 }
