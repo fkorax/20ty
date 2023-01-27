@@ -56,5 +56,6 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.withType<JavaCompile> {
+    sourceCompatibility = "11"
     targetCompatibility = "11"
 }
