@@ -61,3 +61,29 @@ tasks.withType<JavaCompile> {
     sourceCompatibility = jvmTarget
     targetCompatibility = jvmTarget
 }
+
+// TODO Generate icons
+//  programmatically from SVG files
+
+task<Jar>("fatJar") {
+    group = "build"
+
+    // TODO Move all licenses into a separate folder
+    //  in META-INF. They should never have been in the root
+    //  folder to begin with.
+    duplicatesStrategy = DuplicatesStrategy.WARN
+
+    manifest {
+        attributes(
+            "Implementation-Title" to "20ty",
+            "Implementation-Version" to project.version,
+            "Main-Class" to application.mainClass.get()
+        )
+    }
+    archiveBaseName.set("${project.name}-all")
+    from(configurations.runtimeClasspath.get().map {
+        if (it.isDirectory) it else zipTree(it)
+    })
+    exclude("META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA")
+    with(tasks.jar.get() as CopySpec)
+}
