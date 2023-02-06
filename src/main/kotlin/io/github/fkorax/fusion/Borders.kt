@@ -17,15 +17,20 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+@file:JvmName("Borders")
+
 package io.github.fkorax.fusion
 
 import javax.swing.BorderFactory
 import javax.swing.border.Border
-import javax.swing.border.EmptyBorder
+import javax.swing.border.CompoundBorder
+import javax.swing.border.TitledBorder
 
-fun compoundBorder(outsideBorder: Border, insideBorder: Border) =
+fun compoundBorder(outsideBorder: Border, insideBorder: Border): CompoundBorder =
     BorderFactory.createCompoundBorder(outsideBorder, insideBorder)
 
-fun titledBorder(title: String) = BorderFactory.createTitledBorder(title)
+fun titledBorder(title: String): TitledBorder =
+    BorderFactory.createTitledBorder(title)
 
-fun emptyBorder(inset: Int) = EmptyBorder(inset, inset, inset, inset)
+fun emptyBorder(inset: Int): Border =
+    BorderFactory.createEmptyBorder(inset, inset, inset, inset)
