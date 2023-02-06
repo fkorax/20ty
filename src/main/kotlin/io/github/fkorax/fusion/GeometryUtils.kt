@@ -17,6 +17,23 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.fkorax.twenty.ui.util
+@file:JvmName("GeometryUtils")
 
-interface SetButtonUI
+package io.github.fkorax.fusion
+
+import java.awt.Rectangle
+import java.awt.geom.Ellipse2D
+import java.awt.geom.Rectangle2D
+import kotlin.math.min
+
+val Rectangle2D.inscribedEllipse: Ellipse2D
+    get() = Ellipse2D.Double(this.x, this.y, this.width, this.height)
+
+fun getInscribedSquare(width: Int, height: Int): Rectangle =
+    min(width, height).let { radius ->
+        Rectangle(
+            (width - radius) / 2,   // X offset
+            (height - radius) / 2,  // Y offset
+            radius, radius
+        )
+    }
