@@ -20,6 +20,7 @@
 package io.github.fkorax.twenty
 
 import dorkbox.systemTray.SystemTray
+import io.github.fkorax.fusion.XApp
 import io.github.fkorax.twenty.ui.BackgroundIndicator
 import io.github.fkorax.twenty.ui.HumanInterrupter
 import io.github.fkorax.twenty.ui.InfoWindow
@@ -31,12 +32,11 @@ import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.time.LocalTime
 import java.util.logging.Logger
-import java.util.prefs.Preferences
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import kotlin.system.exitProcess
 
-class Twenty {
+class Twenty : XApp() {
     companion object {
         // When the program is first started, save a timestamp so the total screen time can be calculated
         @JvmField
@@ -45,12 +45,6 @@ class Twenty {
         val elapsedTime: Long get() = System.currentTimeMillis() - startTime
 
         private var developerMode: Boolean = false
-
-        @JvmField
-        val resources = Resources(
-            "/${this::class.java.packageName.replace('.', '/')}/res/",
-            "icons/"
-        )
 
         @JvmStatic
         fun main(args: Array<String>) {
@@ -62,7 +56,7 @@ class Twenty {
             // Only set the SystemTray to DEBUG if we are in developer mode
             SystemTray.DEBUG = developerMode
 
-            Twenty().main()
+            Twenty().run()
         }
 
         private fun testInterrupt() {
@@ -96,11 +90,6 @@ class Twenty {
     private val logger: Logger = Logger.getLogger(this::class.qualifiedName)
 
     /**
-     * The Preferences object to retrieve and store the [settings] in a user node.
-     */
-    private val preferences: Preferences = Preferences.userNodeForPackage(this::class.java)
-
-    /**
      * The program settings. Initialized to [FALLBACK_SETTINGS], but will later be changed
      * with the loaded settings (if not problems are encountered during loading).
      */
@@ -110,8 +99,9 @@ class Twenty {
 
     private val schedulator = Schedulator()
     private val interrupter = HumanInterrupter()
-    private val infoWindow = InfoWindow(title)
+    private val infoWindow = InfoWindow(resources, title)
 
+    // TODO defaultAction
     private val showMainWindowAction = TwentyAction("Info", null, "Open the main window.", ::showInfoWindow)
     private val pauseAction = TwentyAction("Pause", null, "Pause the application.") { -> TODO("Implement pause") }
     private val stopAction = TwentyAction("Stop", StopIcon(), "Close the application.", ::stop)
@@ -138,7 +128,7 @@ class Twenty {
         println("TODO: Apply given settings.")
     }
 
-    fun main() {
+    override fun run() {
         // Try and load the stored Settings
         val storedSettingsChangeResult = Settings.loadFrom(preferences)
         // Apply the stored settings, or apply the default settings,
@@ -147,7 +137,7 @@ class Twenty {
 
         // Create the BackgroundIndicator support
         try {
-            BackgroundIndicator.create(actionTree)
+            BackgroundIndicator.create(actionTree, resources)
         }
         catch (t: Throwable) {
             // BackgroundIndicator may encounter weird Exceptions or Errors

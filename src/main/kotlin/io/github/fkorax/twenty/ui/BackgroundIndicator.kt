@@ -23,11 +23,7 @@ import dorkbox.os.OS
 import dorkbox.os.OSUtil
 import dorkbox.systemTray.Menu
 import dorkbox.systemTray.SystemTray
-import io.github.fkorax.fusion.get
-import io.github.fkorax.fusion.item
-import io.github.fkorax.fusion.menu
-import io.github.fkorax.fusion.popupMenu
-import io.github.fkorax.twenty.Twenty
+import io.github.fkorax.fusion.*
 import io.github.fkorax.twenty.ui.util.ActionTree
 import io.github.fkorax.twenty.ui.util.ActionTree.Node.Branch
 import io.github.fkorax.twenty.ui.util.ActionTree.Node.Leaf
@@ -40,14 +36,16 @@ import java.awt.SystemTray as AWTSystemTray
 sealed class BackgroundIndicator {
 
     companion object {
-        fun create(actionTree: ActionTree<TwentyAction>): BackgroundIndicator {
+        fun create(actionTree: ActionTree<TwentyAction>, resources: Resources): BackgroundIndicator {
             // Select an appropriate icon based on OS information
-            val icon = Twenty.resources.getIcon(
-                if (OS.isLinux() && OSUtil.Linux.isUbuntu())
-                    "indicator-ubuntu.png"
-                else
-                    "indicator.png"
-            )
+            // TODO Guard this hacky conversion from Icon to ImageIcon
+            //  (or offer an alternative route to extract the image if this fails,
+            //   so the constructors can take plain icons)
+            val icon = (if (OS.isLinux() && OSUtil.Linux.isUbuntu())
+                resources.getIcon("indicator-ubuntu.svg", 24)
+            else
+                resources.getIcon("indicator.svg", 32)) as ImageIcon
+
             return try {
                 try {
                     SystemTrayLibrary(icon, actionTree)
@@ -79,6 +77,7 @@ sealed class BackgroundIndicator {
 
     private class SystemTrayLibrary(icon: ImageIcon, actionTree: ActionTree<TwentyAction>) : BackgroundIndicator() {
         init {
+            // Get a SystemTray instance for the specified name
             val systemTray = SystemTray.get("20ty")
             try {
                 // First: Install shutdown hook
@@ -91,6 +90,8 @@ sealed class BackgroundIndicator {
                 // TODO Choose platform appropriate icons
                 //  by referencing a to-be-defined property
                 //  of TwentyAction
+                // TODO Set a ToolTipText, generated from the DefaultAction
+                // TODO Set a Status on appropriate platforms (e.g. Windows)
 
                 // Choose the appropriate NodeProcessor implementation
                 // based on the desktop environment of the platform

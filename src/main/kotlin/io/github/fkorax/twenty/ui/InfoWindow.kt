@@ -19,6 +19,7 @@
 
 package io.github.fkorax.twenty.ui
 
+import io.github.fkorax.fusion.Resources
 import io.github.fkorax.fusion.emptyBorder
 import io.github.fkorax.fusion.scale
 import io.github.fkorax.twenty.Twenty
@@ -35,7 +36,7 @@ import java.util.logging.Logger
 import javax.swing.*
 import kotlin.system.exitProcess
 
-class InfoWindow(title: String) : JFrame(title) {
+class InfoWindow(resources: Resources, title: String) : JFrame(title) {
 
     private class ScreenTimeDisplay : JLabel() {
         companion object {
@@ -170,7 +171,7 @@ class InfoWindow(title: String) : JFrame(title) {
                 }
 
                 // The 'Settings' Button
-                val settingsButton = JButton("Settings", Twenty.resources.getIcon("settings-16.png"))
+                val settingsButton = JButton("Settings", resources.getIcon("settings.svg", 16))
                 settingsButton.addActionListener {
                     SettingsDialog(this@InfoWindow).apply {
                         setLocationRelativeTo(null)
