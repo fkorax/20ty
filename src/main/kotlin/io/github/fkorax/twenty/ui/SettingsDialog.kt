@@ -30,20 +30,6 @@ import javax.swing.*
 import kotlin.reflect.KClass
 
 class SettingsDialog(owner: JFrame) : JDialog(owner, "Settings", true) {
-    companion object {
-        private fun JComponent.row(vararg components: Component) {
-            // TODO Maybe LTR / RTL layouts should be taken into account here?
-            val row = Box.createHorizontalBox()
-            components.forEach(row::add)
-            row.add(Box.createHorizontalGlue())
-            this.add(row)
-        }
-
-        private fun groupBorder(title: String) = compoundBorder(
-            titledBorder(title),
-            emptyBorder(5)
-        )
-    }
 
     init {
         this.layout = BorderLayout()
@@ -55,40 +41,7 @@ class SettingsDialog(owner: JFrame) : JDialog(owner, "Settings", true) {
                 verticalBox {
                     border = groupBorder(group.name)
 
-                    // Find all Settings entries which correspond to this Group,
-                    // and sort them according to their ordinal
-                    Settings.ENTRIES_META_INFO.values
-                        .filter { meta -> meta.annotation.group == group }
-                        .sortedBy { meta -> meta.annotation.ordinal }
-                        .forEach { entryMeta ->
-                            val name = entryMeta.reference.name
-                            entryMeta.reference.returnType.classifier?.let { classifier ->
-                                if (classifier is KClass<*>) {
-                                    when (classifier) {
-                                        Setting.Toggle::class -> row(
-                                            SettingWidget.Toggle(name)
-                                        )
-                                        Setting.LookAndFeel::class -> row(
-                                            JLabel(name),
-                                            SettingWidget.Selection(Setting.LookAndFeel.values())
-                                        )
-                                        Setting.SessionMinutes::class -> {
-                                            row(JLabel(name))
-                                            row(SettingWidget.IntRanged(
-                                                    Setting.SessionMinutes.MIN_MINUTES,
-                                                    Setting.SessionMinutes.MAX_MINUTES
-                                                ) { Setting.SessionMinutes(it) }.apply {
-                                                    majorTickSpacing = 5
-                                                    minorTickSpacing = 1
-                                                    labelTable = createStandardLabels(5)
-                                                })
-                                        }
-                                        else -> row(JLabel("Unsupported type"))
-                                    }
-                                }
-                                else throw RuntimeException("Unexpected type (classifier): $classifier")
-                            } ?: throw NullPointerException("No classifier found")
-                        }
+                    processGroup(this, group)
                 }
                 add(Box.createRigidArea(Dimension(0,10)))
             }
@@ -116,4 +69,76 @@ class SettingsDialog(owner: JFrame) : JDialog(owner, "Settings", true) {
         this.minimumSize = this.size
     }
 
+}
+
+private fun processGroup(container: JComponent, group: Settings.Entry.Group) = Settings.ENTRIES_META_INFO.values
+    .filter { it.annotation.group == group }
+    .sortedBy { it.annotation.ordinal }
+    .forEach { entryMetaInfo: Settings.Entry.MetaInfo ->
+        val name = entryMetaInfo.reference.name
+        entryMetaInfo.reference.returnType.classifier?.let { classifier ->
+            if (classifier is KClass<*>) {
+                container.settingWidget(name, classifier)
+            }
+            else {
+                throw RuntimeException("Classifier is not a KClass<*>: $classifier")
+            }
+        } ?: throw NullPointerException("No classifier found")
+    }
+
+// PRIVATE EXTENSION FUNCTIONS
+
+private fun JComponent.row(vararg components: Component) {
+    // TODO Maybe LTR / RTL layouts should be taken into account here?
+    val row = Box.createHorizontalBox()
+    components.forEach(row::add)
+    row.add(Box.createHorizontalGlue())
+    this.add(row)
+}
+
+private fun groupBorder(title: String) = compoundBorder(
+    titledBorder(title),
+    emptyBorder(5)
+)
+
+// Generates a SettingWidget
+private fun JComponent.settingWidget(name: String, klass: KClass<*>) {
+    when (klass) {
+        Setting.Toggle::class -> row(
+            SettingWidget.Toggle(name)
+        )
+        Setting.LookAndFeel::class -> row(
+            JLabel(name),
+            SettingWidget.Selection(Setting.LookAndFeel.values())
+        )
+        Setting.SessionMinutes::class -> {
+            row(JLabel(name))
+            row(SettingWidget.IntRanged(
+                Setting.SessionMinutes.MIN_MINUTES,
+                Setting.SessionMinutes.MAX_MINUTES
+            ) { Setting.SessionMinutes(it) }.apply {
+                majorTickSpacing = 5
+                minorTickSpacing = 1
+                labelTable = createStandardLabels(5)
+            }, JLabel("minutes"))
+        }
+        Setting.BreakSeconds::class -> {
+            row(JLabel(name))
+            row(SettingWidget.IntRanged(
+                Setting.BreakSeconds.MIN_SECONDS,
+                Setting.BreakSeconds.MAX_SECONDS
+            ) {Setting.BreakSeconds(it) }.apply {
+                majorTickSpacing = 5
+                minorTickSpacing = 1
+                labelTable = createStandardLabels(5)
+            }, JLabel("seconds"))
+        }
+        Setting.LocalHmTime::class -> {
+            row(JLabel(name), SettingWidget.LocalHmTime())
+        }
+        Setting.ActiveOn::class -> {
+            row(JLabel(name), SettingWidget.ActiveOn())
+        }
+        else -> throw RuntimeException("Unsupported entry type: ${klass.simpleName}")
+    }
 }
