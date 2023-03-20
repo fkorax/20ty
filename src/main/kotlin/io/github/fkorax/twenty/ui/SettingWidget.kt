@@ -20,14 +20,18 @@
 package io.github.fkorax.twenty.ui
 
 import io.github.fkorax.twenty.Setting
+import io.github.fkorax.twenty.ui.util.MetalSetButtonUI
+import io.github.fkorax.twenty.ui.util.SetButton
 import io.github.fkorax.twenty.util.forEach
+import java.awt.GridLayout
+import java.time.DayOfWeek
 import javax.swing.*
 
 // All SettingWidgets are capable of producing the current value
 // of the Setting they control, but are responsible for nothing else.
 // (This includes handling the text to display)
 sealed interface SettingWidget<T : Setting<*>> {
-
+    // TODO One should also be able to set initial values?
     val value: T
 
     class LocalHmTime : SettingWidget<Setting.LocalHmTime>, JPanel() {
@@ -70,6 +74,33 @@ sealed interface SettingWidget<T : Setting<*>> {
 
         override val value: T
             get() = constructor(this.getValue())
+    }
+
+    class ActiveOn : SettingWidget<Setting.ActiveOn>, JPanel() {
+        private val buttons: Map<DayOfWeek, SetButton> = DayOfWeek.values().associateWith {
+            // TODO Implement Localization here (one-character strings)
+            day -> SetButton(day.name.substring(0,1)).also {
+                it.setUI(MetalSetButtonUI())
+            }
+        }
+
+        init {
+            // A panel with seven independent toggle buttons
+            // Align in a grid, such that they have constant size
+            this.layout = GridLayout(1, buttons.size)
+            DayOfWeek.values().forEach { day -> this.add(buttons[day]) }
+        }
+
+        override val value: Setting.ActiveOn
+            get() = Setting.ActiveOn(buttons.entries.fold(
+                HashSet(),
+            ){ acc: HashSet<DayOfWeek>, (day, button) ->
+                if (button.isSelected) {
+                    acc.add(day)
+                }
+                acc
+            })
+
     }
 
 }
