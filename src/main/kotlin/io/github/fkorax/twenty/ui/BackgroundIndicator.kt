@@ -24,27 +24,32 @@ import dorkbox.os.OSUtil
 import dorkbox.systemTray.Menu
 import dorkbox.systemTray.SystemTray
 import io.github.fkorax.fusion.*
-import io.github.fkorax.twenty.ui.util.ActionTree
-import io.github.fkorax.twenty.ui.util.ActionTree.Node.Branch
-import io.github.fkorax.twenty.ui.util.ActionTree.Node.Leaf
+import io.github.fkorax.twenty.ui.util.Tree
+import io.github.fkorax.twenty.ui.util.Tree.Node.Branch
+import io.github.fkorax.twenty.ui.util.Tree.Node.Leaf
 import io.github.fkorax.twenty.util.section
 import java.awt.TrayIcon
 import javax.swing.*
 import java.awt.Menu as AWTMenu
 import java.awt.SystemTray as AWTSystemTray
 
+private typealias ActionTree = Tree<Action>
+private typealias ActionLeaf = Leaf<Action>
+private typealias ActionBranch = Branch<Action>
+private typealias ActionNodeProcessor = Tree.NodeProcessor<Action>
+
 sealed class BackgroundIndicator {
 
     companion object {
-        fun create(actionTree: ActionTree<TwentyAction>, resources: Resources): BackgroundIndicator {
+        fun create(actionTree: ActionTree, resources: Resources): BackgroundIndicator {
             // Select an appropriate icon based on OS information
             // TODO Guard this hacky conversion from Icon to ImageIcon
             //  (or offer an alternative route to extract the image if this fails,
             //   so the constructors can take plain icons)
             val icon = (if (OS.isLinux() && OSUtil.Linux.isUbuntu())
-                resources.getIcon("indicator-ubuntu.svg", 24)
+                resources.getIcon(Keyword["indicator-ubuntu"], 24)
             else
-                resources.getIcon("indicator.svg", 32)) as ImageIcon
+                resources.getIcon(Keyword["indicator]"], 32)) as ImageIcon
 
             return try {
                 try {
@@ -75,7 +80,7 @@ sealed class BackgroundIndicator {
         }
     }
 
-    private class SystemTrayLibrary(icon: ImageIcon, actionTree: ActionTree<TwentyAction>) : BackgroundIndicator() {
+    private class SystemTrayLibrary(icon: ImageIcon, actionTree: ActionTree) : BackgroundIndicator() {
         init {
             // Get a SystemTray instance for the specified name
             val systemTray = SystemTray.get("20ty")
@@ -109,12 +114,12 @@ sealed class BackgroundIndicator {
             }
         }
 
-        private open class DefaultNodeProcessor(protected val menu: Menu) : ActionTree.NodeProcessor<TwentyAction> {
-            override fun processLeaf(leaf: Leaf<TwentyAction>) {
-                menu.add(JMenuItem(leaf.action))
+        private open class DefaultNodeProcessor(protected val menu: Menu) : ActionNodeProcessor {
+            override fun processLeaf(leaf: ActionLeaf) {
+                menu.add(JMenuItem(leaf.value))
             }
 
-            override fun processBranch(branch: Branch<TwentyAction>): DefaultNodeProcessor =
+            override fun processBranch(branch: ActionBranch): DefaultNodeProcessor =
                 DefaultNodeProcessor(menu.add(JMenu(branch.text)))
         }
 
@@ -125,7 +130,7 @@ sealed class BackgroundIndicator {
          * between items belonging to different menus.
          */
         private class GnomeNodeProcessor(menu: Menu) : DefaultNodeProcessor(menu) {
-            override fun processBranch(branch: Branch<TwentyAction>): GnomeNodeProcessor {
+            override fun processBranch(branch: ActionBranch): GnomeNodeProcessor {
                 menu.add(JSeparator())
                 return this
             }
@@ -133,7 +138,7 @@ sealed class BackgroundIndicator {
 
     }
 
-    private class AwtSystemTray(icon: ImageIcon, actionTree: ActionTree<TwentyAction>) : BackgroundIndicator() {
+    private class AwtSystemTray(icon: ImageIcon, actionTree: ActionTree) : BackgroundIndicator() {
         init {
             val trayIcon = TrayIcon(icon.image, "20ty")
             trayIcon.isImageAutoSize = true
@@ -148,15 +153,15 @@ sealed class BackgroundIndicator {
         }
 
         @JvmInline
-        private value class AwtNodeProcessor(private val menu: AWTMenu) : ActionTree.NodeProcessor<TwentyAction> {
-            override fun processLeaf(leaf: Leaf<TwentyAction>) {
-                val action = leaf.action
+        private value class AwtNodeProcessor(private val menu: AWTMenu) : ActionNodeProcessor {
+            override fun processLeaf(leaf: ActionLeaf) {
+                val action = leaf.value
                 menu.item(action[Action.NAME] as String) {
                     this.addActionListener(action)
                 }
             }
 
-            override fun processBranch(branch: Branch<TwentyAction>): AwtNodeProcessor =
+            override fun processBranch(branch: ActionBranch): AwtNodeProcessor =
                 AwtNodeProcessor(menu.menu(branch.text))
 
         }

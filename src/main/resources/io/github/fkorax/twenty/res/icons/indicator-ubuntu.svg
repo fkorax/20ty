@@ -5,11 +5,33 @@
    viewBox="0 0 4.2333332 4.2333332"
    height="16"
    width="16"
+   sodipodi:docname="indicator-ubuntu.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview17"
+     pagecolor="#000000"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="16.904272"
+     inkscape:cx="3.7860253"
+     inkscape:cy="12.038377"
+     inkscape:window-width="1920"
+     inkscape:window-height="1043"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg8" />
   <defs
      id="defs2">
     <rect
@@ -69,14 +91,7 @@
     </rdf:RDF>
   </metadata>
   <g
-     id="layer1">
-    <rect
-       style="fill:none;fill-opacity:1;stroke:none;stroke-width:0.176389;stroke-linecap:square;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect860"
-       width="4.2333336"
-       height="4.2333336"
-       x="-0.018794164"
-       y="-0.0075289872" />
+     id="g1065">
     <circle
        style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path2257"
@@ -84,7 +99,7 @@
        cy="2.1166666"
        r="1.9843749" />
     <circle
-       style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:0.79374997;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:0.79375;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="circle2857"
        cx="2.1166666"
        cy="2.1166666"

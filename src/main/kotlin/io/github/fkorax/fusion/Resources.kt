@@ -19,15 +19,16 @@
 
 package io.github.fkorax.fusion
 
+import java.util.*
 import javax.swing.Icon
 
 interface Resources {
     companion object {
         // A map of cached (already-created) Resources instances,
         // indexed by Java Class
-        private val resourcesInstances: MutableMap<Class<out XApp>, Resources> = HashMap()
+        private val resourcesInstances: MutableMap<Class<out FusionApp>, Resources> = HashMap()
 
-        internal fun getFor(appClass: Class<out XApp>): Resources =
+        internal fun getFor(appClass: Class<out FusionApp>): Resources =
             // If a cached Resources instance already exists for that app,
             // return it
             resourcesInstances[appClass] ?:
@@ -36,13 +37,15 @@ interface Resources {
             AppResources(
                 appClass,
                 "/${appClass.packageName.replace('.', '/')}/res/",
-                XApp.getCacheDirectoryFor(appClass).resolve("res/").ensureDirectoryExists()
+                FusionApp.getCacheDirectoryFor(appClass).resolve("res/").ensureDirectoryExists()
             ).also { newInstance ->
                 // Cache the newly created Resources instance
                 resourcesInstances[appClass] = newInstance
             }
     }
 
-    fun getIcon(name: String, size: Int): Icon
+    fun getIcon(key: Keyword, size: Int): Icon
+
+    fun getString(key: Keyword, locale: Locale): String
 
 }

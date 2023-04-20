@@ -20,25 +20,38 @@
 package io.github.fkorax.twenty.ui.util
 
 import io.github.fkorax.twenty.util.Either
-import javax.swing.Action
 
 @JvmInline
-value class ActionTree<T : Action>(val root: Node<T>) {
+value class Tree<T>(val root: Node<T>) {
 
-    sealed class Node<T : Action> {
-        data class Leaf<T : Action>(val action: T) : Node<T>()
+    sealed class Node<T> {
+        abstract fun <R> map(transform: (T) -> R): Node<R>
 
-        data class Branch<T : Action>(val text: String, val nodes: List<Node<T>>) : Node<T>() {
+        data class Leaf<T>(val value: T) : Node<T>() {
+            override fun <R> map(transform: (T) -> R): Node<R> =
+                Leaf(transform(value))
+        }
+
+        data class Branch<T>(val text: String, val nodes: List<Node<T>>) : Node<T>() {
             constructor(text: String, vararg nodes: Node<T>) : this(text, arrayListOf(*nodes))
+
+            override fun <R> map(transform: (T) -> R): Node<R> =
+                Branch(text, nodes.map { it.map(transform) })
         }
     }
 
     /**
-     * A utility interface for processing the [Node]s in an [ActionTree].
+     * Creates a new Tree from this Tree by applying the transform function to each Leaf.
+     */
+    fun <R> map(transform: (T) -> R): Tree<R> =
+        Tree(this.root.map(transform))
+
+    /**
+     * A utility interface for processing the [Node]s in an [Tree].
      * Implementing types simply need to override the two methods [processLeaf] and [processBranch];
      * the interface offers a default implementation of [processNode].
      */
-    interface NodeProcessor<T : Action> {
+    interface NodeProcessor<T> {
 
         fun processLeaf(leaf: Node.Leaf<T>)
 
@@ -70,11 +83,11 @@ value class ActionTree<T : Action>(val root: Node<T>) {
  * so the alternative [java.lang.LinkedList] doesn't offer any real performance
  * benefits.
  */
-class BranchBuilder<T : Action> internal constructor(var text: String) {
+class BranchBuilder<T> internal constructor(var text: String) {
     private val rawNodes: ArrayList<Either<T, BranchBuilder<T>>> = ArrayList()
 
-    fun leaf(action: T) {
-        rawNodes.add(Either.Left(action))
+    fun leaf(element: T) {
+        rawNodes.add(Either.Left(element))
     }
 
     /**
@@ -82,8 +95,8 @@ class BranchBuilder<T : Action> internal constructor(var text: String) {
      * leaves at once. May offer performance benefits for
      * a large number of leaves, since [ArrayList.addAll] is used.
      */
-    fun leaves(vararg actions: T) {
-        rawNodes.addAll(actions.map { Either.Left(it) })
+    fun leaves(vararg elements: T) {
+        rawNodes.addAll(elements.map { Either.Left(it) })
     }
 
     // This subroutine is a public method because only this way
@@ -94,10 +107,10 @@ class BranchBuilder<T : Action> internal constructor(var text: String) {
     inline fun branch(text: String, block: BranchBuilder<T>.() -> Unit): BranchBuilder<T> =
         branch(text).also(block)
 
-    fun build(): ActionTree.Node.Branch<T> = ActionTree.Node.Branch(text,
+    fun build(): Tree.Node.Branch<T> = Tree.Node.Branch(text,
         rawNodes.map { rawNode ->
             when(rawNode) {
-                is Either.Left<T, *> -> ActionTree.Node.Leaf(rawNode.value)
+                is Either.Left<T, *> -> Tree.Node.Leaf(rawNode.value)
                 is Either.Right<*, BranchBuilder<T>> -> rawNode.value.build()
             }
         }
@@ -105,13 +118,13 @@ class BranchBuilder<T : Action> internal constructor(var text: String) {
 }
 
 
-fun <T : Action> actionTree(action: T) = ActionTree<T>(ActionTree.Node.Leaf(action))
+fun <T> buildTree(action: T) = Tree(Tree.Node.Leaf(action))
 
 /**
- * Initiates the ActionTree builder DSL.
+ * Initiates the Tree builder DSL.
  *
  * It follows the general pattern of Fusion, and uses a `BranchBuilder`
- * internally to build the branches of the [ActionTree] output.
+ * internally to build the branches of the [Tree] output.
  */
-fun <T : Action> actionTree(text: String, block: BranchBuilder<T>.() -> Unit): ActionTree<T> =
-    ActionTree(BranchBuilder<T>(text).also(block).build())
+fun <T> buildTree(text: String, block: BranchBuilder<T>.() -> Unit): Tree<T> =
+    Tree(BranchBuilder<T>(text).also(block).build())

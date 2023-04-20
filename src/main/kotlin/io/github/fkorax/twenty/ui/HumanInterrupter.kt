@@ -24,6 +24,8 @@ import io.github.fkorax.twenty.util.forEach
 import java.awt.Color
 import java.awt.Toolkit
 import java.awt.event.ActionEvent
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.awt.event.ComponentListener
 import javax.swing.*
 import javax.swing.border.EmptyBorder
@@ -37,6 +39,15 @@ class HumanInterrupter {
     private val interruptWindow = InterruptWindow()
 
     companion object {
+
+        @JvmStatic
+        fun testInterrupt() {
+            testWindow(object : ComponentAdapter() {
+                override fun componentHidden(e: ComponentEvent?) {
+                    println("Interrupt window hidden. Test successful?")
+                }
+            })
+        }
 
         @JvmStatic
         fun testWindow(componentListener: ComponentListener) {

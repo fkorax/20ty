@@ -3,13 +3,13 @@
    inkscape:export-ydpi="384"
    inkscape:export-xdpi="384"
    inkscape:export-filename="../src/main/resources/io/github/fkorax/twenty/res/icons/indicator.png"
-   sodipodi:docname="indicator.svg"
+   sodipodi:docname="indicator-paused.svg"
    inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
    id="svg8"
    version="1.1"
-   viewBox="0 0 8.4666664 8.4666664"
-   height="32"
-   width="32"
+   viewBox="0 0 2.1166666 2.1166666"
+   height="8"
+   width="8"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -87,9 +87,9 @@
      inkscape:document-rotation="0"
      inkscape:current-layer="layer1"
      inkscape:document-units="px"
-     inkscape:cy="1.0625"
-     inkscape:cx="32.8125"
-     inkscape:zoom="8"
+     inkscape:cy="6.46875"
+     inkscape:cx="2.46875"
+     inkscape:zoom="16"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0"
      borderopacity="1.0"
@@ -115,16 +115,31 @@
      inkscape:groupmode="layer"
      inkscape:label="Layer 1">
     <circle
-       cy="4.2333331"
-       cx="4.2333331"
+       cy="1.0583333"
+       cx="1.0583333"
        id="path859"
-       style="fill:#3d98d6;fill-opacity:1;stroke:none;stroke-width:0.564444;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       r="4.2333331" />
-    <circle
-       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.94074"
-       id="path1743"
-       cx="4.2333331"
-       cy="4.2333331"
-       r="2.1166666" />
+       style="fill:#3d98d6;fill-opacity:1;stroke:none;stroke-width:0.141111;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       r="1.0583333" />
+    <rect
+       style="fill:none;fill-opacity:1;stroke:none;stroke-width:0.176389;stroke-linecap:square;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect860"
+       width="4.2333336"
+       height="4.2333336"
+       x="2.3129649e-18"
+       y="2.3129649e-18" />
+    <rect
+       style="fill:#ffffff;stroke-width:1.05833;stroke-linejoin:round"
+       id="rect889"
+       width="0.26458332"
+       height="0.79374999"
+       x="0.66145831"
+       y="0.66145831" />
+    <rect
+       style="fill:#ffffff;stroke-width:1.05833;stroke-linejoin:round"
+       id="rect1337"
+       width="0.26458332"
+       height="0.79374999"
+       x="1.190625"
+       y="0.66145831" />
   </g>
 </svg>

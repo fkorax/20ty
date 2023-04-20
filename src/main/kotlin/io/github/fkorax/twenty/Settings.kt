@@ -10,6 +10,9 @@ import kotlin.reflect.full.memberProperties
 
 private typealias EntryReference = KProperty1<Settings, Setting<*>>
 
+// TODO Add option: Fullscreen window, Always on Top (but not to front!!)?
+// TODO Custom colors?
+// TODO Localization FIRST! → UIApp
 data class Settings(
     @property:Entry(Group.DAY, 1) val sessionDuration: Setting.SessionMinutes,
     @property:Entry(Group.DAY, 2) val breakDuration: Setting.BreakSeconds,

@@ -22,31 +22,49 @@ package io.github.fkorax.fusion
 import java.awt.Component
 import java.awt.Container
 import java.awt.LayoutManager
-import javax.swing.Box
-import javax.swing.JButton
-import javax.swing.JLabel
-import javax.swing.JPanel
+import javax.swing.*
 
-fun Container.horizontalBox(block: Box.() -> Unit = {}): Box =
+inline fun Container.horizontalBox(block: Box.() -> Unit = {}): Box =
     fadd(Box.createHorizontalBox(), block)
 
-fun Container.verticalBox(block: Box.() -> Unit = {}): Box =
+inline fun Container.horizontalBox(constraints: Any, block: Box.() -> Unit = {}): Box =
+    fadd(Box.createHorizontalBox(), constraints, block)
+
+inline fun Container.verticalBox(block: Box.() -> Unit = {}): Box =
     fadd(Box.createVerticalBox(), block)
+
+inline fun Container.verticalBox(constraints: Any, block: Box.() -> Unit = {}): Box =
+    fadd(Box.createVerticalBox(), constraints, block)
+
+fun Container.horizontalGlue(): Component =
+    fadd(Box.createHorizontalGlue()) {}
 
 fun Container.verticalGlue(): Component =
     fadd(Box.createVerticalGlue()) {}
 
-fun Container.panel(layout: LayoutManager, block: JPanel.() -> Unit = {}): JPanel =
+inline fun Container.panel(layout: LayoutManager, block: JPanel.() -> Unit = {}): JPanel =
     fadd(JPanel(layout), block)
 
-fun Container.button(text: String, block: JButton.() -> Unit = {}): JButton =
+inline fun Container.button(text: String, block: JButton.() -> Unit = {}): JButton =
     fadd(JButton(text), block)
 
-fun Container.scaledJLabel(text: String, scaleFactor: Float, block: JLabel.() -> Unit = {}) =
+inline fun Container.button(text: String, icon: Icon, block: JButton.() -> Unit = {}): JButton =
+    fadd(JButton(text, icon), block)
+
+inline fun Container.button(action: Action, block: JButton.() -> Unit = {}): JButton =
+    fadd(JButton(action), block)
+
+inline fun Container.scaledLabel(text: String, scaleFactor: Float, block: JLabel.() -> Unit = {}) =
     fadd(JLabel(text).apply { this.scale(scaleFactor) }, block)
 
-private fun <T : Component> Container.fadd(comp: T, block: T.() -> Unit): T {
+inline fun <T : Component> Container.fadd(comp: T, block: T.() -> Unit): T {
     block(comp)
     this.add(comp)
+    return comp
+}
+
+inline fun <T : Component> Container.fadd(comp: T, constraints: Any, block: T.() -> Unit): T {
+    block(comp)
+    this.add(comp, constraints)
     return comp
 }

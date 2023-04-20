@@ -20,31 +20,24 @@
 package io.github.fkorax.twenty
 
 import dorkbox.systemTray.SystemTray
-import io.github.fkorax.fusion.XApp
-import io.github.fkorax.twenty.ui.BackgroundIndicator
+import io.github.fkorax.fusion.FusionApp
 import io.github.fkorax.twenty.ui.HumanInterrupter
-import io.github.fkorax.twenty.ui.InfoWindow
-import io.github.fkorax.twenty.ui.TwentyAction
-import io.github.fkorax.twenty.ui.icons.StopIcon
-import io.github.fkorax.twenty.ui.util.ActionTree
-import io.github.fkorax.twenty.ui.util.actionTree
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
+import io.github.fkorax.twenty.ui.MainWindow
 import java.time.LocalTime
 import java.util.logging.Logger
-import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import kotlin.system.exitProcess
 
-class Twenty : XApp() {
+class TwentyApp : FusionApp(), SharedOperations {
     companion object {
         // When the program is first started, save a timestamp so the total screen time can be calculated
+        // TODO Move this to the Schedulator? Into its own component? Away from the app!
         @JvmField
         val startTime: Long = System.currentTimeMillis()
 
         val elapsedTime: Long get() = System.currentTimeMillis() - startTime
 
-        private var developerMode: Boolean = false
+        private var developerMode = false
 
         @JvmStatic
         fun main(args: Array<String>) {
@@ -56,15 +49,15 @@ class Twenty : XApp() {
             // Only set the SystemTray to DEBUG if we are in developer mode
             SystemTray.DEBUG = developerMode
 
-            Twenty().run()
-        }
-
-        private fun testInterrupt() {
-            HumanInterrupter.testWindow(object : ComponentAdapter() {
-                override fun componentHidden(e: ComponentEvent?) {
-                    println("Interrupt window hidden. Test successful?")
-                }
-            })
+            try {
+                TwentyApp().run()
+            }
+            catch (e: Exception) {
+                // Ensure the process closes if an Exception is thrown here
+                e.printStackTrace()
+                // TODO Unify error management
+                exitProcess(1)
+            }
         }
 
         /**
@@ -85,13 +78,14 @@ class Twenty : XApp() {
             lookAndFeel = Setting.LookAndFeel.CROSS_PLATFORM
             // The default cross-platform look and feel should always work...
         )
+
     }
 
     private val logger: Logger = Logger.getLogger(this::class.qualifiedName)
 
     /**
      * The program settings. Initialized to [FALLBACK_SETTINGS], but will later be changed
-     * with the loaded settings (if not problems are encountered during loading).
+     * with the loaded settings (if no problems are encountered during loading).
      */
     private val settings: Settings = FALLBACK_SETTINGS
 
@@ -99,33 +93,15 @@ class Twenty : XApp() {
 
     private val schedulator = Schedulator()
     private val interrupter = HumanInterrupter()
-    private val infoWindow = InfoWindow(resources, title)
+    private val mainWindow = MainWindow(getSubContext("main"), this, title)
 
-    // TODO defaultAction
-    private val showMainWindowAction = TwentyAction("Info", null, "Open the main window.", ::showInfoWindow)
-    private val pauseAction = TwentyAction("Pause", null, "Pause the application.") { -> TODO("Implement pause") }
-    private val stopAction = TwentyAction("Stop", StopIcon(), "Close the application.", ::stop)
-    private val testInterruptAction = TwentyAction("Test Interrupt", null, "Test the interrupt functionality.", ::testInterrupt)
-
-    private val actionTree: ActionTree<TwentyAction> = actionTree("20ty") {
-        leaves(
-            showMainWindowAction,
-            pauseAction,
-            stopAction
-        )
-        if (developerMode) {
-            branch("Developer Options") {
-                leaf(testInterruptAction)
-            }
-        }
-    }
-
-    fun applySettings(change: Settings) {
+    private fun applySettings(change: Settings) {
         // TODO After every settings change, the new settings should
         //  be stored in preferences
         //  (why are they stored every time? → Sometimes, a fallback could have
         //  been applied, and we want the user to recognize that)
         println("TODO: Apply given settings.")
+        // TODO The Interrupt should not show while the Settings are activated
     }
 
     override fun run() {
@@ -135,44 +111,15 @@ class Twenty : XApp() {
         // which will also cause them to be stored
         applySettings(storedSettingsChangeResult.getOrDefault(FALLBACK_SETTINGS))
 
-        // Create the BackgroundIndicator support
-        try {
-            BackgroundIndicator.create(actionTree, resources)
-        }
-        catch (t: Throwable) {
-            // BackgroundIndicator may encounter weird Exceptions or Errors
-            // because it is interacting with native components...
-            // In this case, it must be ensured that the process actually stops.
-            System.err.println("Encountered serious problem while creating BackgroundIndicator.")
-            System.err.println("Stack Trace:")
-            t.printStackTrace()
-            System.err.println("Aborting program...")
-            // Abort with an exit code indicating that an error occurred
-            exitProcess(1)
-        }
         schedulator.schedule({ interrupter.interruptHuman(20) }, 20)
     }
 
-    private fun stop() {
+    override val isDeveloperMode: Boolean
+        get() = developerMode
+
+    override fun stop() {
         logger.info("Process stopped by user.")
         exitProcess(0)
-    }
-
-    // TODO Rename to MainWindow
-    private fun showInfoWindow() {
-        SwingUtilities.invokeLater {
-            // If the info window is not visible:
-            if (!infoWindow.isVisible) {
-                // Show the InfoWindow, centered on screen
-                infoWindow.setLocationRelativeTo(null)
-                infoWindow.isVisible = true
-            }
-            // Otherwise:
-            else {
-                // Simply bring the window to the front
-                infoWindow.toFront()
-            }
-        }
     }
 
 }

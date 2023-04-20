@@ -19,11 +19,10 @@
 
 package io.github.fkorax.twenty.ui
 
-import io.github.fkorax.fusion.Resources
-import io.github.fkorax.fusion.emptyBorder
-import io.github.fkorax.fusion.scale
-import io.github.fkorax.twenty.Twenty
-import io.github.fkorax.twenty.ui.icons.StopIcon
+import io.github.fkorax.fusion.*
+import io.github.fkorax.twenty.SharedOperations
+import io.github.fkorax.twenty.TwentyApp
+import io.github.fkorax.twenty.ui.util.buildTree
 import io.github.fkorax.twenty.util.forEach
 import io.github.fkorax.twenty.util.section
 import java.awt.AWTEvent
@@ -36,7 +35,9 @@ import java.util.logging.Logger
 import javax.swing.*
 import kotlin.system.exitProcess
 
-class InfoWindow(resources: Resources, title: String) : JFrame(title) {
+class MainWindow(
+    context: Context, so: SharedOperations, title: String
+) : JFrame(title), Context by context, SharedOperations by so {
 
     private class ScreenTimeDisplay : JLabel() {
         companion object {
@@ -93,16 +94,47 @@ class InfoWindow(resources: Resources, title: String) : JFrame(title) {
     private var lastUpdateMillis = 0L
     private fun updateScreenTimeDisplay() = synchronized(screenTimeDisplay) {
         if (System.currentTimeMillis() - lastUpdateMillis >= 1000) {
-            screenTimeDisplay.millis = Twenty.elapsedTime
+            screenTimeDisplay.millis = TwentyApp.elapsedTime
             logger.finest("Updated screen time display.")
             lastUpdateMillis = System.currentTimeMillis()
         }
     }
 
-    init {
-        // For continuous updating of this information, we don't need an external Thread,
-        // we can rely on the user's actions as impulse givers to do that.
+    private val openAction = action(Keyword["open"], null, Keyword["open_description"], ::openMainWindow)
+    private val pauseAction = action(Keyword["pause"], null, Keyword["pause_description"]) { -> TODO("Implement pause") }
+    private val stopAction = action(Keyword["stop"], Pair(Keyword["stop"], 16), Keyword["stop_description"], ::stop)
+    private val testInterruptAction = action(Keyword["test_interrupt"], null, null, HumanInterrupter::testInterrupt)
 
+
+    init {
+        try {
+            BackgroundIndicator.create(buildTree("20ty") {
+                leaves(
+                    openAction,
+                    pauseAction,
+                    stopAction
+                )
+                if (isDeveloperMode) {
+                    branch("Developer Options") {
+                        leaf(testInterruptAction)
+                    }
+                }
+            }, resources)
+        }
+        catch (t: Throwable) {
+            // BackgroundIndicator may encounter weird Exceptions or Errors
+            // because it is interacting with native components...
+            // In this case, it must be ensured that the process actually stops.
+            System.err.println("Encountered serious problem while creating BackgroundIndicator.")
+            System.err.println("Stack Trace:")
+            t.printStackTrace()
+            System.err.println("Aborting program...")
+            // Abort with an exit code indicating that an error occurred
+            exitProcess(1)
+        }
+
+        // For continuous updating of this information, we don't need an external Thread,
+        // we can rely on the user's actions as impulse provider to do that.
         section("listeners") {
             // We react to mouse moved events to update
             // the time information, but in relatively fixed time intervals,
@@ -142,9 +174,8 @@ class InfoWindow(resources: Resources, title: String) : JFrame(title) {
             contentPane.border = emptyBorder(padSize / 2)
         }
 
-        section("screenTimePanel") {
-            val screenTimePanel = Box.createVerticalBox()
-            screenTimePanel.border = BorderFactory.createCompoundBorder(
+        val screenTimePanel = verticalBox(BorderLayout.NORTH) {
+            border = BorderFactory.createCompoundBorder(
                 // A small hack to create a platform-appropriate border
                 BorderFactory.createTitledBorder(""), emptyBorder(padSize),
             )
@@ -155,42 +186,53 @@ class InfoWindow(resources: Resources, title: String) : JFrame(title) {
             forEach(screenTimeLabel, screenTimeDisplay) {
                 it.alignmentX = CENTER_ALIGNMENT
             }
-            forEach(screenTimeLabel, screenTimeDisplay, screenTimePanel::add)
-            add(screenTimePanel, BorderLayout.NORTH)
+            forEach(screenTimeLabel, screenTimeDisplay, this::add)
         }
 
-        section("bottomPanel") {
-            // The buttons panel
-            val buttons = Box.createHorizontalBox().apply {
-                border = BorderFactory.createEmptyBorder(padSize / 2, 0, 0, 0)
+        val bottomPanel = horizontalBox(BorderLayout.SOUTH) {
+            border = BorderFactory.createEmptyBorder(padSize / 2, 0, 0, 0)
 
-                // The 'Stop' Button
-                val stopButton = JButton("Stop", StopIcon())
-                stopButton.addActionListener {
-                    exitProcess(0)
-                }
-
-                // The 'Settings' Button
-                val settingsButton = JButton("Settings", resources.getIcon("settings.svg", 16))
-                settingsButton.addActionListener {
-                    SettingsDialog(this@InfoWindow).apply {
-                        setLocationRelativeTo(null)
-                        isVisible = true
-                    }
-                }
-
-                forEach(stopButton, Box.createHorizontalGlue(), settingsButton, this::add)
+            // The 'Stop' Button
+            val stopButton = button(stopAction)
+            stopButton.addActionListener {
+                exitProcess(0)
             }
-            add(buttons, BorderLayout.SOUTH)
+
+            horizontalGlue()
+
+            // The 'Settings' Button
+            val settingsButton = button("Settings", resources.getIcon(Keyword["settings"], 16))
+            settingsButton.addActionListener {
+                SettingsDialog(this@MainWindow).apply {
+                    setLocationRelativeTo(null)
+                    isVisible = true
+                }
+            }
         }
 
         // Window configuration
         this.defaultCloseOperation = WindowConstants.HIDE_ON_CLOSE
 
-        // Pack, so the dialog gets to its final size
+        // Pack, so the window gets to its final size
         pack()
         // Set the minimum size to the size after packing
         this.minimumSize = size
+    }
+
+    private fun openMainWindow() {
+        SwingUtilities.invokeLater {
+            // If the info window is not visible:
+            if (!this.isVisible) {
+                // Show the InfoWindow, centered on screen
+                this.setLocationRelativeTo(null)
+                this.isVisible = true
+            }
+            // Otherwise:
+            else {
+                // Simply bring the window to the front
+                this.toFront()
+            }
+        }
     }
 
 }

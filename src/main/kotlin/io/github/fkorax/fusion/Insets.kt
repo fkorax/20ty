@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022  Franchesko Korako
+ * Copyright © 2022, 2023  Franchesko Korako
  *
  * This file is part of 20ty.
  *
@@ -17,28 +17,14 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.fkorax.twenty.ui.icons
+package io.github.fkorax.fusion
 
-import java.awt.Component
-import java.awt.Graphics
-import java.awt.Polygon
+import java.awt.Insets
 
-class PlayIcon : DLMaterialIcon {
-    // The base arrow shape
-    private val baseShape = Polygon(
-        intArrayOf(5, 12, 5),
-        intArrayOf(4, 8, 12),
-        3
+operator fun Insets.plus(other: Insets): Insets =
+    Insets(
+        this.top + other.top,
+        this.left + other.left,
+        this.bottom + other.bottom,
+        this.right + other.right
     )
-
-    override fun paintIcon(c: Component?, g: Graphics?, x: Int, y: Int) {
-        super.paintIcon(c, g, x, y)
-
-        if (g != null) {
-            baseShape.translate(x, y)
-            g.fillPolygon(baseShape)
-            baseShape.translate(-x, -y)
-        }
-    }
-
-}

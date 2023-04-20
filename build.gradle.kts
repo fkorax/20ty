@@ -51,7 +51,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("io.github.fkorax.twenty.Twenty")
+    mainClass.set("io.github.fkorax.twenty.TwentyApp")
 }
 
 tasks.test {

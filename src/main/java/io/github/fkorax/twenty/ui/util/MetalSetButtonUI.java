@@ -20,7 +20,7 @@
 package io.github.fkorax.twenty.ui.util;
 
 import io.github.fkorax.fusion.GeometryUtils;
-import io.github.fkorax.fusion.InsetsUtils;
+import io.github.fkorax.fusion.InsetsKt;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -66,7 +66,7 @@ public class MetalSetButtonUI extends MetalToggleButtonUI implements SetButtonUI
             b.setBorder(compoundBorder.getInsideBorder());
             // Adjust the margin to account for the now missing
             // outer border ...
-            final Insets newMargin = InsetsUtils.plus(b.getMargin(), compoundBorder.getOutsideBorder().getBorderInsets(b));
+            final Insets newMargin = InsetsKt.plus(b.getMargin(), compoundBorder.getOutsideBorder().getBorderInsets(b));
             // ... and adjust them further to reduce the horizontal size of the SetButton
             newMargin.left -= 8;
             newMargin.right -= 8;

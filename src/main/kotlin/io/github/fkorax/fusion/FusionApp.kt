@@ -24,6 +24,7 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.LinkOption
+import java.util.*
 import java.util.prefs.Preferences
 
 /**
@@ -56,7 +57,7 @@ import java.util.prefs.Preferences
  *      * [Internationalization and Localization in Java 8](https://www.baeldung.com/java-8-localization)
  *      * [A Guide to the ResourceBundle](https://www.baeldung.com/java-resourcebundle)
  */
-abstract class XApp : Runnable {
+abstract class FusionApp : Runnable, Context {
     companion object {
 
         private inline fun <R> wrapIOException(block: () -> R): R = try {
@@ -87,10 +88,10 @@ abstract class XApp : Runnable {
             fusionDirectory.resolve("data/").ensureDirectoryExists()
         }
 
-        internal fun getCacheDirectoryFor(appClass: Class<out XApp>): File =
+        internal fun getCacheDirectoryFor(appClass: Class<out FusionApp>): File =
             cacheDirectory.resolve(appClass.packageName.replace('.', '/')).ensureDirectoryExists()
 
-        internal fun getDataDirectoryFor(appClass: Class<out XApp>): File =
+        internal fun getDataDirectoryFor(appClass: Class<out FusionApp>): File =
             dataDirectory.resolve(appClass.packageName.replace('.', '/')).ensureDirectoryExists()
 
     }
@@ -104,10 +105,20 @@ abstract class XApp : Runnable {
      * The `Resources` instance which manages the resources for instances of
      * the same app.
      */
-    protected val resources: Resources = Resources.getFor(this::class.java)
+    override val resources: Resources = Resources.getFor(this::class.java)
 
     protected val dataDirectory: File by lazy {
         getDataDirectoryFor(this::class.java)
+    }
+
+    override val appLocale: Locale
+        get() = Locale.getDefault()
+
+    protected fun getSubContext(name: String): Context = object : Context {
+        override val resources: Resources = this@FusionApp.resources
+
+        override val appLocale: Locale
+            get() = this@FusionApp.appLocale
     }
 
     // TODO Add a flag to enforce uniqueness of an app. (So only one instance can run at a time)

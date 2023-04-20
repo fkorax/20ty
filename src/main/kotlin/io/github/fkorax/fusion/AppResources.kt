@@ -19,26 +19,24 @@
 
 package io.github.fkorax.fusion
 
-import org.apache.batik.transcoder.TranscoderException
-import org.apache.batik.transcoder.TranscoderInput
-import org.apache.batik.transcoder.TranscoderOutput
-import org.apache.batik.transcoder.image.ImageTranscoder
-import org.apache.batik.transcoder.image.PNGTranscoder
-import java.awt.image.BufferedImage
 import java.io.File
+import java.util.*
 import javax.swing.Icon
 import javax.swing.ImageIcon
 
 /**
- * An implementation of [Resources] for instances of [XApp].
+ * An implementation of [Resources] for instances of [FusionApp].
+ *
+ * Resources are stored in the `res/` subdirectory of the `App`'s package
  */
 internal class AppResources internal constructor(
-    private val appClass: Class<out XApp>,
-    resPackageRoot: String,
+    private val appClass: Class<out FusionApp>,
+    private val resPackageRoot: String,
     cacheDirectory: File
 ) : Resources {
 
     // The tree of locations
+    // TODO Only used for icons
     private sealed class LocTree<T>(root: T) {
         @Suppress("LeakingThis")
         val root: T  = ensureValidity(root)
@@ -58,119 +56,43 @@ internal class AppResources internal constructor(
             override fun combine(base: String, relative: String): String =
                 base + relative
         }
-
-        class Cache(root: File) : LocTree<File>(root) {
-            override fun ensureValidity(base: File): File =
-                base.ensureDirectoryExists()
-
-            override fun combine(base: File, relative: String): File =
-                base.resolve(relative)
-        }
     }
 
     private val resTree = LocTree.Res(resPackageRoot)
 
-    private val cacheTree = LocTree.Cache(cacheDirectory)
+    private val cachedIcons: MutableMap<String, Icon> = HashMap()
 
-    private val iconHotCache: MutableMap<Pair<String, Int>, Icon> = HashMap()
-    override fun getIcon(name: String, size: Int): Icon {
-        val parameters = Pair(name, size)
+    @Throws(MissingResourceException::class)
+    override fun getIcon(key: Keyword, size: Int): Icon {
+        val name = key.name
+        // Convert the parameters to Strings and just use those with
+        // a unified format, and unify the hot caches
+        val parameters = "$name-$size"
         // Check if the icon is in the hot cache
         //  If yes, return it.
-        return iconHotCache[parameters] ?:
-        //  If not: Load or Generate and (hot-)cache the image
-        try {
-            loadIconResource(
-                appClass,
-                resTree.icons + name,
-                cacheTree.icons.resolve("$name-$size.png"),
-                size
-            ).also { icon -> iconHotCache[parameters] = icon }
-        }
-        catch (npe: NullPointerException) {
-            throw NoSuchResourceException(name, ResourceType.ICON)
-        }
-        catch (te: TranscoderException) {
-            throw ResourceException(
-                name, ResourceType.ICON, "Problem while loading resource: $name", te
-            )
-        }
+        return cachedIcons[parameters] ?:
+            //  If not: Load and (hot-)cache the image
+            // Resolve the file in question:
+            // Look for files with an image extension (.png)
+            // TODO Look for icons with the specific size?
+            appClass.getResource(resTree.icons + name + ".png")?.let { resourceUrl ->
+                ImageIcon(resourceUrl).also { icon -> cachedIcons[parameters] = icon }
+            } ?: throw MissingResourceException(
+                    "No icon resource for specified key", this::class.simpleName, key.toString())
     }
+
+    private val resourceBundles: MutableMap<Locale, ResourceBundle> = HashMap()
+
+    override fun getString(key: Keyword, locale: Locale): String {
+        // We tap into the ResourceBundle API to manage these values
+        val stringBundle = getStringResourceBundle(locale)
+        return stringBundle.getString(key.name)
+    }
+
+    private fun getStringResourceBundle(locale: Locale) =
+        // Get the ResourceBundle and cache it
+        resourceBundles[locale] ?:
+        ResourceBundle.getBundle("${resPackageRoot}values/strings".replace('/', '.').substring(1), locale, appClass.classLoader).also {
+            bundle -> resourceBundles[locale] = bundle }
 
 }
-
-/**
- * This is a version of a PNG transcoder which also caches the image being transcoded.
- * (A three-way transcoder)
- *
- * After the [writeImage] operation is done, a deep copy of the image is stored
- * as [cachedImage].
- *
- * Based in part on [How to use an SVG image in JavaFX](https://edencoding.com/svg-javafx/).
- *
- * See [Image Transcoder Tutorial](http://dev.cs.ovgu.de/java/batik-1.5/rasterizerTutorial.html)
- */
-private class CachedPngTranscoder : PNGTranscoder() {
-    lateinit var cachedImage: BufferedImage
-        private set
-
-    @Throws(TranscoderException::class)
-    override fun writeImage(img: BufferedImage?, to: TranscoderOutput?) {
-        // Fail as quickly as possible:
-        // If the image is null, throw a TranscoderException
-        try {
-            img!!
-        }
-        catch (npe: NullPointerException) {
-            throw TranscoderException("Image to be written is null.", npe)
-        }
-
-        super.writeImage(img, to)
-
-        // Cache a copy of the image;
-        // throw an Exception if it is null
-        this.cachedImage = img.deepCopy()
-    }
-}
-
-private fun loadIconResource(
-    appClass: Class<*>,
-    resourcePath: String,
-    cacheFile: File,
-    size: Int
-): Icon =
-    // Check if a cached file for this icon exists
-    // TODO Plan for when the icon could not be loaded
-    if (cacheFile.exists()) {
-        // If yes, use that file
-        // TODO Load the image data instantly
-        //  to check for corruption
-        ImageIcon(cacheFile.path)
-        // TODO Check if the file is not outdated / needs to be updated (recached)
-    }
-    else {
-        // If not, generate such an image from the SVG source
-        // and cache it in one pass
-        val svgTranscoder = CachedPngTranscoder()
-        appClass.getResourceAsStream(resourcePath).use { inStream ->
-            if (inStream == null) {
-                throw NullPointerException("InputStream was null for: $resourcePath")
-            }
-            val transInput = TranscoderInput(inStream)
-            svgTranscoder.addTranscodingHint(ImageTranscoder.KEY_HEIGHT, size.toFloat())
-            cacheFile.outputStream().use { outStream ->
-                try {
-                    val transOutput = TranscoderOutput(outStream)
-                    svgTranscoder.transcode(transInput, transOutput)
-                    outStream.flush()
-                }
-                catch (e: Exception) {
-                    e.printStackTrace()
-                    svgTranscoder.transcode(transInput, null)
-                }
-            }
-            // cachedImage is guaranteed to be not null,
-            // and if it isn't, an Exception will be thrown
-            ImageIcon(svgTranscoder.cachedImage)
-        }
-    }

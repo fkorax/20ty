@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022  Franchesko Korako
+ * Copyright © 2022, 2023  Franchesko Korako
  *
  * This file is part of 20ty.
  *
@@ -17,17 +17,12 @@
  * along with 20ty.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.fkorax.twenty.ui.icons
+package io.github.fkorax.twenty
 
-import java.awt.Component
-import java.awt.Graphics
+interface SharedOperations {
 
-class StopIcon : DLMaterialIcon {
+    val isDeveloperMode: Boolean
 
-    override fun paintIcon(c: Component?, g: Graphics?, x: Int, y: Int) {
-        super.paintIcon(c, g, x, y)
-
-        g?.fillRect(x+4, y+4, 8, 8)
-    }
+    fun stop()
 
 }
