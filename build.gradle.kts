@@ -37,11 +37,6 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains:annotations:16.0.2")
-    // The codec dependency is required because Batik does not
-    // declare it on its own. See:
-    //  https://stackoverflow.com/questions/45239099/apache-batik-no-writeadapter-is-available
-    implementation("org.apache.xmlgraphics:batik-codec:1.16")
-    implementation("org.apache.xmlgraphics:batik-transcoder:1.16")
     implementation("com.formdev:flatlaf:3.0")
     implementation("com.dorkbox:SystemTray:4.1")
     // Has a lower version for compatibility with SystemTray:
