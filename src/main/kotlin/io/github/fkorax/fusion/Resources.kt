@@ -35,9 +35,7 @@ interface Resources {
             // Create a new Resources instance for
             // the specified app class
             AppResources(
-                appClass,
-                "/${appClass.packageName.replace('.', '/')}/res/",
-                FusionApp.getCacheDirectoryFor(appClass).resolve("res/").ensureDirectoryExists()
+                appClass
             ).also { newInstance ->
                 // Cache the newly created Resources instance
                 resourcesInstances[appClass] = newInstance

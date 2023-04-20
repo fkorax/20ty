@@ -19,7 +19,6 @@
 
 package io.github.fkorax.fusion
 
-import java.io.File
 import java.util.*
 import javax.swing.Icon
 import javax.swing.ImageIcon
@@ -31,8 +30,6 @@ import javax.swing.ImageIcon
  */
 internal class AppResources internal constructor(
     private val appClass: Class<out FusionApp>,
-    private val resPackageRoot: String,
-    cacheDirectory: File
 ) : Resources {
 
     // The tree of locations
@@ -58,6 +55,8 @@ internal class AppResources internal constructor(
         }
     }
 
+    private val resPackageName = appClass.packageName + ".res"
+    private val resPackageRoot = "/${resPackageName.replace('.', '/')}/"
     private val resTree = LocTree.Res(resPackageRoot)
 
     private val cachedIcons: MutableMap<String, Icon> = HashMap()
@@ -92,7 +91,7 @@ internal class AppResources internal constructor(
     private fun getStringResourceBundle(locale: Locale) =
         // Get the ResourceBundle and cache it
         resourceBundles[locale] ?:
-        ResourceBundle.getBundle("${resPackageRoot}values/strings".replace('/', '.').substring(1), locale, appClass.classLoader).also {
+        ResourceBundle.getBundle("${resPackageName}.values.strings", locale, appClass.classLoader).also {
             bundle -> resourceBundles[locale] = bundle }
 
 }
