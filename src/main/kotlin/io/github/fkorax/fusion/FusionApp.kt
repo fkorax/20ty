@@ -80,16 +80,9 @@ abstract class FusionApp : Runnable, Context {
             } ?: throw IOException("Could not find user home directory")
         }
 
-        private val cacheDirectory: File = wrapIOException {
-            fusionDirectory.resolve("cache/").ensureDirectoryExists()
-        }
-
         private val dataDirectory: File = wrapIOException {
             fusionDirectory.resolve("data/").ensureDirectoryExists()
         }
-
-        internal fun getCacheDirectoryFor(appClass: Class<out FusionApp>): File =
-            cacheDirectory.resolve(appClass.packageName.replace('.', '/')).ensureDirectoryExists()
 
         internal fun getDataDirectoryFor(appClass: Class<out FusionApp>): File =
             dataDirectory.resolve(appClass.packageName.replace('.', '/')).ensureDirectoryExists()
