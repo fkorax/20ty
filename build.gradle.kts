@@ -38,9 +38,9 @@ repositories {
 dependencies {
     implementation("org.jetbrains:annotations:16.0.2")
     implementation("com.formdev:flatlaf:3.0")
-    implementation("com.dorkbox:SystemTray:4.1")
+    implementation("com.dorkbox:SystemTray:4.2.1")
     // Has a lower version for compatibility with SystemTray:
-    implementation("com.dorkbox:Utilities:1.9")
+    implementation("com.dorkbox:Utilities:1.39")
     implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
 }

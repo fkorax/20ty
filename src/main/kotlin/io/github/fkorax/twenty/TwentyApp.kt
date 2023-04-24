@@ -26,7 +26,6 @@ import io.github.fkorax.twenty.ui.MainWindow
 import java.time.LocalTime
 import java.util.logging.Logger
 import javax.swing.UIManager
-import kotlin.system.exitProcess
 
 class TwentyApp : FusionApp(), SharedOperations {
     companion object {
@@ -49,14 +48,17 @@ class TwentyApp : FusionApp(), SharedOperations {
             // Only set the SystemTray to DEBUG if we are in developer mode
             SystemTray.DEBUG = developerMode
 
+            // Install shutdown hook
+            AppIntegrity.installShutdownHook()
+
             try {
                 TwentyApp().run()
             }
-            catch (e: Exception) {
-                // Ensure the process closes if an Exception is thrown here
-                e.printStackTrace()
-                // TODO Unify error management
-                exitProcess(1)
+            catch (t: Throwable) {
+                // A problem encountered during setup
+                // should not be handled by
+                AppIntegrity.displayThrowable(t)
+                AppIntegrity.shutdown(dueToProblem = true)
             }
         }
 
@@ -119,7 +121,7 @@ class TwentyApp : FusionApp(), SharedOperations {
 
     override fun stop() {
         logger.info("Process stopped by user.")
-        exitProcess(0)
+        AppIntegrity.shutdown(dueToProblem = false)
     }
 
 }

@@ -72,7 +72,7 @@ abstract class FusionApp : Runnable, Context {
                 File(userHomePath).resolve(".fusion/").also { directory ->
                     directory.ensureDirectoryExists()
                     // If the Fusion directory is not hidden and the platform is Windows:
-                    if (!directory.isHidden && OS.isWindows()) {
+                    if (!directory.isHidden && OS.isWindows) {
                         // Hide directory, Windows style
                         Files.setAttribute(directory.toPath(), "dos:hidden", true, LinkOption.NOFOLLOW_LINKS)
                     }

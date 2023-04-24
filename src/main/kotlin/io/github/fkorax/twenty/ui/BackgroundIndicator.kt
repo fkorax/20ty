@@ -20,7 +20,6 @@
 package io.github.fkorax.twenty.ui
 
 import dorkbox.os.OS
-import dorkbox.os.OSUtil
 import dorkbox.systemTray.Menu
 import dorkbox.systemTray.SystemTray
 import io.github.fkorax.fusion.*
@@ -41,12 +40,14 @@ private typealias ActionNodeProcessor = Tree.NodeProcessor<Action>
 sealed class BackgroundIndicator {
 
     companion object {
+        const val SYSTEM_TRAY_NAME = "twenty"
+
         fun create(actionTree: ActionTree, resources: Resources): BackgroundIndicator {
             // Select an appropriate icon based on OS information
             // TODO Guard this hacky conversion from Icon to ImageIcon
             //  (or offer an alternative route to extract the image if this fails,
             //   so the constructors can take plain icons)
-            val icon = (if (OS.isLinux() && OSUtil.Linux.isUbuntu())
+            val icon = (if (OS.isLinux && OS.Linux.isUbuntu)
                 resources.getIcon(Keyword["indicator-ubuntu"], 24)
             else
                 resources.getIcon(Keyword["indicator]"], 32)) as ImageIcon
@@ -83,10 +84,10 @@ sealed class BackgroundIndicator {
     private class SystemTrayLibrary(icon: ImageIcon, actionTree: ActionTree) : BackgroundIndicator() {
         init {
             // Get a SystemTray instance for the specified name
-            val systemTray = SystemTray.get("20ty")
+            val systemTray = SystemTray.get(SYSTEM_TRAY_NAME)
             try {
-                // First: Install shutdown hook
-                systemTray.installShutdownHook()
+                // Shutdown hook is installed externally
+                //  (in TwentyApp)
                 // Set the tray icon image
                 systemTray.setImage(icon.image)
                 // Build the menu from the given
@@ -101,7 +102,7 @@ sealed class BackgroundIndicator {
                 // Choose the appropriate NodeProcessor implementation
                 // based on the desktop environment of the platform
                 (when {
-                    OSUtil.DesktopEnv.isGnome() -> ::GnomeNodeProcessor
+                    OS.DesktopEnv.isGnome -> ::GnomeNodeProcessor
                     else -> ::DefaultNodeProcessor
                 })(menu).processNode(actionTree.root)
             }
