@@ -19,7 +19,9 @@
 
 package io.github.fkorax.twenty.ui
 
+import io.github.fkorax.fusion.map
 import io.github.fkorax.fusion.scale
+import io.github.fkorax.fusion.verticalGlue
 import io.github.fkorax.twenty.util.forEach
 import java.awt.Color
 import java.awt.Toolkit
@@ -29,6 +31,7 @@ import java.awt.event.ComponentEvent
 import java.awt.event.ComponentListener
 import javax.swing.*
 import javax.swing.border.EmptyBorder
+import kotlin.math.roundToInt
 
 /**
  * See also:
@@ -80,8 +83,17 @@ class HumanInterrupter {
                 // TODO Do this Locale-sensitively!!
                 interruptWindow.counterText = "$durationInSeconds s"
 
-                // Center and show the interrupt window
+                // Set size relative to screen size (33 % of screen size),
+                // so the window appears in the same proportions as the screen,
+                // which should give it a more grounded, harmonious appearance.
+                // Note that HumanInterrupter has a minimum size,
+                // which is the size after packing.
+                (Toolkit.getDefaultToolkit().screenSize?.map { dim ->
+                    (dim * 0.33).roundToInt()
+                } ?: interruptWindow.minimumSize).also(interruptWindow::setSize)
+                // Center on screen
                 interruptWindow.setLocationRelativeTo(null)
+                // Show window
                 interruptWindow.isVisible = true
                 // Put the window to the front, so the user sees it
                 // (but don't request focus!!)
@@ -146,10 +158,14 @@ class HumanInterrupter {
                 it.alignmentX = CENTER_ALIGNMENT
             }
 
+            verticalGlue()
             forEach(messageDisplay, Box.createVerticalStrut(messageDisplay.font.size), counterDisplay,
                 this::add)
+            verticalGlue()
 
+            this.isUndecorated = true
             pack()
+            this.minimumSize = this.size
         }
 
     }
