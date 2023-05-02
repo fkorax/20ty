@@ -50,7 +50,7 @@ sealed class BackgroundIndicator {
             val icon = (if (OS.isLinux && OS.Linux.isUbuntu)
                 resources.getIcon(Keyword["indicator-ubuntu"], 24)
             else
-                resources.getIcon(Keyword["indicator]"], 32)) as ImageIcon
+                resources.getIcon(Keyword["indicator"], 32)) as ImageIcon
 
             return try {
                 try {
