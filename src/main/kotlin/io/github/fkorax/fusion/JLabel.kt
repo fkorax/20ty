@@ -21,6 +21,12 @@ package io.github.fkorax.fusion
 
 import javax.swing.JLabel
 
+var JLabel.fontSize2D: Float
+    get() = font.size2D
+    set(value) {
+        this.font = font.deriveFont(value)
+    }
+
 fun JLabel.scale(factor: Float) {
-    font = font.deriveFont(font.size2D * factor)
+    this.fontSize2D = fontSize2D * factor
 }

@@ -19,9 +19,7 @@
 
 package io.github.fkorax.twenty.ui
 
-import io.github.fkorax.fusion.map
-import io.github.fkorax.fusion.scale
-import io.github.fkorax.fusion.verticalGlue
+import io.github.fkorax.fusion.*
 import io.github.fkorax.twenty.util.forEach
 import java.awt.Color
 import java.awt.Toolkit
@@ -31,7 +29,9 @@ import java.awt.event.ComponentEvent
 import java.awt.event.ComponentListener
 import javax.swing.*
 import javax.swing.border.EmptyBorder
+import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 /**
  * See also:
@@ -42,12 +42,21 @@ class HumanInterrupter {
     private val interruptWindow = InterruptWindow()
 
     companion object {
+        /**
+         * The constant factor of the window's dimensions relative
+         * to the screen's dimension. This factor is the square root
+         * of the window's relative size.
+         * The factor is currently set to sqrt(0.33) ≈ 0.5745.
+         */
+        private const val RELATIVE_DIMENSION_FACTOR = 0.5745
 
         @JvmStatic
         fun testInterrupt() {
+            val startTime = System.currentTimeMillis()
             testWindow(object : ComponentAdapter() {
                 override fun componentHidden(e: ComponentEvent?) {
-                    println("Interrupt window hidden. Test successful?")
+                    println("Interrupt window hidden after ${System.currentTimeMillis() - startTime} ms. " +
+                            "Test successful?")
                 }
             })
         }
@@ -89,8 +98,9 @@ class HumanInterrupter {
                 // Note that HumanInterrupter has a minimum size,
                 // which is the size after packing.
                 (Toolkit.getDefaultToolkit().screenSize?.map { dim ->
-                    (dim * 0.33).roundToInt()
+                    (dim * RELATIVE_DIMENSION_FACTOR).roundToInt()
                 } ?: interruptWindow.minimumSize).also(interruptWindow::setSize)
+                interruptWindow.adjustDisplaySizes()
                 // Center on screen
                 interruptWindow.setLocationRelativeTo(null)
                 // Show window
@@ -131,8 +141,13 @@ class HumanInterrupter {
 
 
     private class InterruptWindow : JFrame("20ty") {
-        private val messageDisplay = JLabel("Look at least 20 m into the distance.").apply { scale(2.0f) }
-        private val counterDisplay = JLabel("///").apply { scale(6.0f) }
+        companion object {
+            private val MESSAGE_SCALE_FACTOR = 2.0f
+            private val COUNTER_SCALE_FACTOR = 6.0f
+        }
+
+        private val messageDisplay = JLabel("Look at least 20 m into the distance.").apply { scale(MESSAGE_SCALE_FACTOR) }
+        private val counterDisplay = JLabel("///").apply { scale(COUNTER_SCALE_FACTOR) }
 
         var counterText: String
             get() = counterDisplay.text
@@ -166,6 +181,20 @@ class HumanInterrupter {
             this.isUndecorated = true
             pack()
             this.minimumSize = this.size
+        }
+
+        fun adjustDisplaySizes() {
+            // Get the window size and adjust:
+            // The scale should depend on window width and height.
+            val (minWidth, minHeight) = this.minimumSize
+            // The font size should grow with the square root of the factors
+            val sizeFactor: Double = sqrt(
+                min(this.width / minWidth.toDouble(), this.height / minHeight.toDouble())
+            )
+            val baseSize = UIManager.getDefaults().getFont("Label.font").size2D
+            println("Size Factor: $sizeFactor")
+            messageDisplay.fontSize2D = (baseSize * MESSAGE_SCALE_FACTOR * sizeFactor).toFloat()
+            counterDisplay.fontSize2D = (baseSize * COUNTER_SCALE_FACTOR * sizeFactor).toFloat()
         }
 
     }
