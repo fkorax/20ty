@@ -103,6 +103,10 @@ class HumanInterrupter {
                 interruptWindow.adjustDisplaySizes()
                 // Center on screen
                 interruptWindow.setLocationRelativeTo(null)
+                // Set always on top (if supported)
+                if (interruptWindow.isAlwaysOnTopSupported) {
+                    interruptWindow.isAlwaysOnTop = true
+                }
                 // Show window
                 interruptWindow.isVisible = true
                 // Put the window to the front, so the user sees it
@@ -192,7 +196,6 @@ class HumanInterrupter {
                 min(this.width / minWidth.toDouble(), this.height / minHeight.toDouble())
             )
             val baseSize = UIManager.getDefaults().getFont("Label.font").size2D
-            println("Size Factor: $sizeFactor")
             messageDisplay.fontSize2D = (baseSize * MESSAGE_SCALE_FACTOR * sizeFactor).toFloat()
             counterDisplay.fontSize2D = (baseSize * COUNTER_SCALE_FACTOR * sizeFactor).toFloat()
         }
