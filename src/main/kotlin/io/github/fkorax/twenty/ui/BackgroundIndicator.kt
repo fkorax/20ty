@@ -23,6 +23,7 @@ import dorkbox.os.OS
 import dorkbox.systemTray.Menu
 import dorkbox.systemTray.SystemTray
 import io.github.fkorax.fusion.*
+import io.github.fkorax.twenty.AppIntegrity
 import io.github.fkorax.twenty.ui.util.Tree
 import io.github.fkorax.twenty.ui.util.Tree.Node.Branch
 import io.github.fkorax.twenty.ui.util.Tree.Node.Leaf
@@ -59,7 +60,7 @@ sealed class BackgroundIndicator {
                 catch (e: Exception) {
                     section("Exception handling") {
                         System.err.println("Problem in SystemTray library:")
-                        e.printStackTrace()
+                        AppIntegrity.displayThrowable(e)
                         System.err.println("Attempting to use AWT SystemTray instead...")
                     }
                     // Use the AWT SystemTray as fallback
